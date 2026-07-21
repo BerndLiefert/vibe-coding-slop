@@ -1,0 +1,1074 @@
+{
+  "cols": 92,
+  "rows": 60,
+  "paths": [
+    {
+      "id": 1,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 32,
+          "y": 5
+        },
+        {
+          "x": 32,
+          "y": 17
+        },
+        {
+          "x": 30,
+          "y": 19
+        },
+        {
+          "x": 30,
+          "y": 22
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 38,
+          "y": 23
+        },
+        {
+          "x": 29,
+          "y": 25
+        },
+        {
+          "x": 30,
+          "y": 30
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 34,
+            "y": 19
+          },
+          "c2": {
+            "x": 31,
+            "y": 21
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 28.083333333333332,
+            "y": 26.916666666666668
+          },
+          "c2": {
+            "x": 28.416666666666668,
+            "y": 28.583333333333332
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 42.5,
+          "y": 21
+        },
+        {
+          "x": 48,
+          "y": 26.5
+        },
+        {
+          "x": 42.5,
+          "y": 32
+        },
+        {
+          "x": 37,
+          "y": 26.5
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 45.5375661239,
+            "y": 21
+          },
+          "c2": {
+            "x": 48,
+            "y": 23.4624338761
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 48,
+            "y": 29.5375661239
+          },
+          "c2": {
+            "x": 45.5375661239,
+            "y": 32
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 39.4624338761,
+            "y": 32
+          },
+          "c2": {
+            "x": 37,
+            "y": 29.5375661239
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 37,
+          "y": 23.4624338761
+        },
+        "c2": {
+          "x": 39.4624338761,
+          "y": 21
+        }
+      }
+    },
+    {
+      "id": 5,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 37,
+          "y": 30
+        },
+        {
+          "x": 31,
+          "y": 30
+        },
+        {
+          "x": 35,
+          "y": 34
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 35,
+            "y": 28.5
+          },
+          "c2": {
+            "x": 33,
+            "y": 27
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 30,
+            "y": 33
+          },
+          "c2": {
+            "x": 33,
+            "y": 33.416666666666664
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 53,
+          "y": 44
+        },
+        {
+          "x": 53,
+          "y": 36
+        },
+        {
+          "x": 53,
+          "y": 32
+        },
+        {
+          "x": 57,
+          "y": 8
+        },
+        {
+          "x": 54,
+          "y": 9
+        },
+        {
+          "x": 54,
+          "y": 6
+        },
+        {
+          "x": 52,
+          "y": 8
+        },
+        {
+          "x": 50,
+          "y": 5
+        },
+        {
+          "x": 49,
+          "y": 8
+        },
+        {
+          "x": 48,
+          "y": 5
+        },
+        {
+          "x": 46,
+          "y": 7
+        },
+        {
+          "x": 45,
+          "y": 4
+        },
+        {
+          "x": 43,
+          "y": 7
+        },
+        {
+          "x": 42,
+          "y": 4
+        },
+        {
+          "x": 40,
+          "y": 7
+        },
+        {
+          "x": 39,
+          "y": 4
+        },
+        {
+          "x": 37,
+          "y": 7
+        },
+        {
+          "x": 36,
+          "y": 5
+        },
+        {
+          "x": 34,
+          "y": 7
+        },
+        {
+          "x": 32,
+          "y": 5
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 53,
+            "y": 41
+          },
+          "c2": {
+            "x": 52,
+            "y": 38
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 58,
+            "y": 38
+          },
+          "c2": {
+            "x": 58,
+            "y": 30
+          }
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 33.5,
+          "y": 26
+        },
+        {
+          "x": 34,
+          "y": 27
+        },
+        {
+          "x": 33.5,
+          "y": 28
+        },
+        {
+          "x": 33,
+          "y": 27
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 33.7761423749,
+            "y": 26
+          },
+          "c2": {
+            "x": 34,
+            "y": 26.4477152502
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 34,
+            "y": 27.5522847498
+          },
+          "c2": {
+            "x": 33.7761423749,
+            "y": 28
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 33.2238576251,
+            "y": 28
+          },
+          "c2": {
+            "x": 33,
+            "y": 27.5522847498
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 33,
+          "y": 26.4477152502
+        },
+        "c2": {
+          "x": 33.2238576251,
+          "y": 26
+        }
+      }
+    },
+    {
+      "id": 8,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 43.5,
+          "y": 26
+        },
+        {
+          "x": 44,
+          "y": 27
+        },
+        {
+          "x": 43.5,
+          "y": 28
+        },
+        {
+          "x": 43,
+          "y": 27
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 43.7761423749,
+            "y": 26
+          },
+          "c2": {
+            "x": 44,
+            "y": 26.4477152502
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 44,
+            "y": 27.5522847498
+          },
+          "c2": {
+            "x": 43.7761423749,
+            "y": 28
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 43.2238576251,
+            "y": 28
+          },
+          "c2": {
+            "x": 43,
+            "y": 27.5522847498
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 43,
+          "y": 26.4477152502
+        },
+        "c2": {
+          "x": 43.2238576251,
+          "y": 26
+        }
+      }
+    },
+    {
+      "id": 9,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 31,
+          "y": 34
+        },
+        {
+          "x": 30,
+          "y": 36
+        },
+        {
+          "x": 30,
+          "y": 38
+        },
+        {
+          "x": 31,
+          "y": 40
+        },
+        {
+          "x": 33,
+          "y": 40
+        },
+        {
+          "x": 41,
+          "y": 41
+        },
+        {
+          "x": 48,
+          "y": 40
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 39,
+          "y": 41
+        },
+        {
+          "x": 40,
+          "y": 43
+        },
+        {
+          "x": 43,
+          "y": 43
+        },
+        {
+          "x": 43,
+          "y": 45
+        },
+        {
+          "x": 47,
+          "y": 46
+        },
+        {
+          "x": 50,
+          "y": 45
+        },
+        {
+          "x": 53,
+          "y": 44
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 48,
+          "y": 38
+        },
+        {
+          "x": 49,
+          "y": 41
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 43,
+          "y": 46
+        },
+        {
+          "x": 37,
+          "y": 59
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 42,
+            "y": 53
+          },
+          "c2": {
+            "x": 38,
+            "y": 54
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 49,
+          "y": 55
+        },
+        {
+          "x": 54,
+          "y": 46
+        },
+        {
+          "x": 58,
+          "y": 54
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 49,
+            "y": 50
+          },
+          "c2": {
+            "x": 51,
+            "y": 47
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 57,
+            "y": 47
+          },
+          "c2": {
+            "x": 59,
+            "y": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 50,
+          "y": 55
+        },
+        {
+          "x": 53,
+          "y": 55
+        },
+        {
+          "x": 57,
+          "y": 54
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 53,
+          "y": 45
+        },
+        {
+          "x": 55,
+          "y": 46
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 51,
+          "y": 55
+        },
+        {
+          "x": 50,
+          "y": 59
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 57,
+          "y": 54
+        },
+        {
+          "x": 57,
+          "y": 59
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 43,
+          "y": 45
+        },
+        {
+          "x": 40,
+          "y": 48
+        },
+        {
+          "x": 39,
+          "y": 51
+        },
+        {
+          "x": 41,
+          "y": 52
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 12,
+          "y": 26
+        },
+        "c2": {
+          "x": 15,
+          "y": 34
+        }
+      },
+      "nodes": [
+        {
+          "x": 10,
+          "y": 38
+        },
+        {
+          "x": 6,
+          "y": 43
+        },
+        {
+          "x": 12,
+          "y": 41
+        },
+        {
+          "x": 12,
+          "y": 50
+        },
+        {
+          "x": 14,
+          "y": 44
+        },
+        {
+          "x": 17,
+          "y": 50
+        },
+        {
+          "x": 18,
+          "y": 44
+        },
+        {
+          "x": 21,
+          "y": 49
+        },
+        {
+          "x": 20,
+          "y": 42
+        },
+        {
+          "x": 19,
+          "y": 36
+        },
+        {
+          "x": 16,
+          "y": 19
+        },
+        {
+          "x": 10,
+          "y": 20
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 7,
+            "y": 39
+          },
+          "c2": {
+            "x": 6,
+            "y": 42
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 8,
+            "y": 44
+          },
+          "c2": {
+            "x": 10,
+            "y": 44
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 10,
+            "y": 46
+          },
+          "c2": {
+            "x": 10,
+            "y": 47
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 15,
+            "y": 48
+          },
+          "c2": {
+            "x": 15,
+            "y": 45
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 13,
+            "y": 46
+          },
+          "c2": {
+            "x": 14,
+            "y": 48
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 19,
+            "y": 48
+          },
+          "c2": {
+            "x": 20,
+            "y": 46
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 17,
+            "y": 46
+          },
+          "c2": {
+            "x": 19,
+            "y": 48
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 22,
+            "y": 46
+          },
+          "c2": {
+            "x": 22,
+            "y": 45
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 20,
+            "y": 40
+          },
+          "c2": {
+            "x": 21,
+            "y": 38
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 21,
+            "y": 28
+          },
+          "c2": {
+            "x": 18,
+            "y": 19
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 15,
+            "y": 18
+          },
+          "c2": {
+            "x": 12,
+            "y": 19
+          }
+        }
+      ]
+    }
+  ]
+}

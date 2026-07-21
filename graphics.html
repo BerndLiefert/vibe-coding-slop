@@ -1,0 +1,2797 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pfad-Rasterizer</title>
+  <style>
+    :root {
+      --bg: #0d1016;
+      --panel: #12161f;
+      --panel-border: #232a38;
+      --grid-line: #1a1f2b;
+      --cell-off: #171c26;
+      --accent: #6ee7c2;
+      --accent-dim: #2f5b4d;
+      --select: #f2a65a;
+      --select-dim: #6b4a26;
+      --text: #dfe4ec;
+      --text-dim: #8891a3;
+      --mono: 'JetBrains Mono', 'Consolas', monospace;
+      --sans: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    aside.toolbar {
+      width: 290px;
+      flex-shrink: 0;
+      background: var(--panel);
+      border-right: 1px solid var(--panel-border);
+      padding: 20px 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .brand {
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: .12em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: .04em;
+      margin-top: 4px;
+    }
+
+    #lang-select {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+      background: #1a2130;
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      padding: 4px 6px;
+      cursor: pointer;
+      flex: none;
+    }
+
+    .group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .group-label {
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 6px;
+    }
+
+    .icon-btn:hover {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .icon-btn .icon {
+      filter: brightness(0.8);
+      transition: filter .12s;
+    }
+
+    .icon-btn:hover .icon {
+      filter: brightness(1.15);
+    }
+
+    .icon-btn.active .icon {
+      filter: brightness(1.3) drop-shadow(0 0 3px var(--select));
+    }
+
+    button {
+      font-family: var(--sans);
+      font-size: 12.5px;
+      color: var(--text);
+      background: #1a2130;
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 9px 10px;
+      cursor: pointer;
+      transition: border-color .12s, background .12s, color .12s;
+      flex: 1;
+    }
+
+    button:hover {
+      border-color: #3a4459;
+    }
+
+    button:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    button.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    button.danger:hover {
+      border-color: #c25454;
+      color: #e08a8a;
+    }
+
+    button.wide {
+      width: 100%;
+    }
+
+    button.finish {
+      border-color: var(--select);
+      color: var(--select);
+    }
+
+    button.finish:disabled {
+      border-color: var(--panel-border);
+      color: var(--text);
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type=range] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+
+    .value-pill {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      background: #0f1420;
+      border: 1px solid var(--panel-border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--text);
+    }
+
+    .color-row label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .fill-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fill-toggle input[type=checkbox] {
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px;
+    }
+
+    input[type=color] {
+      width: 34px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      background: #0f1420;
+      cursor: pointer;
+    }
+
+    input[type=color]:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    input[type=color]::-webkit-color-swatch-wrapper {
+      padding: 2px;
+    }
+
+    input[type=color]::-webkit-color-swatch {
+      border: none;
+      border-radius: 3px;
+    }
+
+    .hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      line-height: 1.55;
+      background: #0f1420;
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .hint b {
+      color: var(--text);
+    }
+
+    .status {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .status b {
+      color: var(--accent);
+    }
+
+    textarea.data {
+      width: 100%;
+      height: 120px;
+      resize: vertical;
+      background: #0a0d13;
+      color: var(--text-dim);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      padding: 8px;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 30% 20%, #10141d 0%, var(--bg) 60%);
+      overflow: auto;
+    }
+
+    canvas {
+      background: var(--cell-off);
+      border: 1px solid var(--panel-border);
+      border-radius: 2px;
+      cursor: crosshair;
+      box-shadow: 0 0 0 1px #000, 0 20px 60px -20px rgba(0, 0, 0, .6);
+    }
+
+    canvas.select-mode {
+      cursor: default;
+    }
+
+    canvas.transform-mode {
+      cursor: default;
+    }
+
+    canvas.perspective-mode {
+      cursor: default;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #232a38;
+      border-radius: 4px;
+    }
+
+    /* Hidden file input styling */
+    #bg-file-input {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="toolbar">
+      <div class="brand-row">
+        <div class="brand"><span data-i18n="brand_title">Pfad-Rasterizer</span><small
+            data-i18n="brand_sub">Mehrpunkt-Pfade, rasterisiert</small></div>
+        <select id="lang-select" title="Sprache / Language">
+          <option value="de">DE</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <div class="group-label" data-i18n="group_tool">Werkzeug</div>
+        <div class="tool-grid">
+          <button id="tool-line" title="Linien-Pfad" data-i18n="btn_line">
+            Linien-Pfad
+          </button>
+          <button id="tool-curve" title="Kurven-Pfad" data-i18n="btn_curve">
+            Kurven-Pfad
+          </button>
+          <button id="tool-select" title="Bearbeiten" data-i18n="btn_select">
+            Bearbeiten
+          </button>
+          <button id="tool-transform" title="Transformieren" data-i18n="btn_transform">
+            Transformieren
+          </button>
+          <button id="tool-perspective" title="Perspektivisch verzerren" data-i18n="btn_perspective">
+            Perspektivisch verzerren
+          </button>
+          <button id="tool-ellipse" title="Kreis / Ellipse" data-i18n="btn_ellipse">
+            Kreis / Ellipse
+          </button>
+          <button id="tool-rect" title="Rechteck" data-i18n="btn_rect">
+            Rechteck
+          </button>
+          <button id="tool-star" title="Stern / Zahnrad" data-i18n="btn_star">
+            Stern / Zahnrad
+          </button>
+        </div>
+        <button id="btn-finish" class="finish wide" disabled data-i18n="btn_finish">Pfad abschließen (Enter)</button>
+      </div>
+
+      <div class="group">
+        <div class="group-label" data-i18n="group_star">Stern / Zahnrad</div>
+        <div class="btn-row">
+          <button id="star-mode-star" class="active" data-i18n="btn_star_mode_star">Stern</button>
+          <button id="star-mode-gear" data-i18n="btn_star_mode_gear">Zahnrad</button>
+        </div>
+        <div class="group-label" style="margin-top:8px;"><span id="star-points-label" data-i18n="label_star_points">Zacken</span></div>
+        <div class="slider-row">
+          <input type="range" id="star-points" min="3" max="24" step="1" value="5">
+          <span class="value-pill" id="star-points-val">5</span>
+        </div>
+        <div class="group-label" style="margin-top:8px;" data-i18n="label_star_depth">Tiefe</div>
+        <div class="slider-row">
+          <input type="range" id="star-depth" min="10" max="90" step="1" value="45">
+          <span class="value-pill" id="star-depth-val">45%</span>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label" data-i18n="group_history">Verlauf</div>
+        <div class="btn-row">
+          <button id="btn-undo" data-i18n="btn_undo">↶ Undo</button>
+          <button id="btn-redo" data-i18n="btn_redo">↷ Redo</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label"><span data-i18n="group_thickness">Linienstärke</span> <span id="thickness-target"
+            style="color:var(--text-dim); text-transform:none;"></span></div>
+        <div class="slider-row">
+          <input type="range" id="thickness" min="1" max="8" step="1" value="2">
+          <span class="value-pill" id="thickness-val">2</span>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label"><span data-i18n="group_color">Farbe</span> <span id="color-target"
+            style="color:var(--text-dim); text-transform:none;"></span></div>
+        <div class="color-row">
+          <label for="stroke-color" data-i18n="color_line_label">Linie</label>
+          <input type="color" id="stroke-color" value="#6ee7c2">
+        </div>
+        <div class="color-row">
+          <label class="fill-toggle">
+            <input type="checkbox" id="fill-enabled">
+            <span data-i18n="color_fill_label">Füllung</span>
+          </label>
+          <input type="color" id="fill-color" value="#2f5b4d">
+        </div>
+        <div class="hint" style="padding:6px 10px; font-size:10.5px;" data-i18n="fill_hint">Farbwahl bei „Füllung"
+          aktiviert sie automatisch. Sichtbar wird sie nur bei geschlossenen Pfaden.</div>
+      </div>
+
+      <div class="group">
+        <div class="group-label" data-i18n="group_selection">Auswahl</div>
+        <div class="btn-row">
+          <button id="btn-close" data-i18n="btn_close">Pfad schließen</button>
+          <button id="btn-delete" class="danger" data-i18n="btn_delete">Löschen</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-mirror-h" data-i18n="btn_mirror_h">Horizontal spiegeln</button>
+          <button id="btn-mirror-v" data-i18n="btn_mirror_v">Vertikal spiegeln</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-duplicate" class="wide" title="Strg+D" data-i18n="btn_duplicate">Duplizieren</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-toggle-conn" class="wide" disabled data-i18n="btn_toggle_conn">Segment umwandeln</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label" data-i18n="group_order">Reihenfolge</div>
+        <div class="btn-row">
+          <button id="btn-order-front" title="Strg+Umschalt+]" data-i18n="btn_order_front">Ganz nach vorne</button>
+          <button id="btn-order-back" title="Strg+Umschalt+[" data-i18n="btn_order_back">Ganz nach hinten</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-order-forward" title="Strg+]" data-i18n="btn_order_forward">Eine Ebene vor</button>
+          <button id="btn-order-backward" title="Strg+[" data-i18n="btn_order_backward">Eine Ebene zurück</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label" data-i18n="group_file">Datei</div>
+        <div class="btn-row">
+          <button id="btn-save" data-i18n="btn_save">Speichern</button>
+          <button id="btn-load" data-i18n="btn_load">Laden</button>
+        </div>
+        <div class="btn-row"><button id="btn-export" class="wide" data-i18n="btn_export">Als JSON exportieren</button>
+        </div>
+        <div class="btn-row"><button id="btn-import" class="wide" data-i18n="btn_import">JSON importieren</button></div>
+        <input type="file" id="import-file-input" accept=".json,application/json" style="display:none">
+        <div class="btn-row"><button id="btn-clear" class="danger wide" data-i18n="btn_clear">Alles löschen</button>
+        </div>
+      </div>
+
+      <!-- NEU: Hintergrundbild zum Durchpausen -->
+      <div class="group">
+        <div class="group-label" data-i18n="group_bg">Hintergrundbild</div>
+        <div class="btn-row">
+          <button id="btn-bg-select" class="wide" data-i18n="btn_bg_select">Bild auswählen</button>
+        </div>
+        <input type="file" id="bg-file-input" accept="image/*">
+        <div class="slider-row">
+          <span style="font-size:11px; color:var(--text-dim); min-width:75px;"
+            data-i18n="bg_opacity_label">Transparenz</span>
+          <input type="range" id="bg-opacity" min="0" max="100" step="1" value="50" disabled>
+          <span class="value-pill" id="bg-opacity-val">50%</span>
+        </div>
+        <div class="btn-row">
+          <button id="btn-bg-toggle" class="wide" disabled data-i18n="btn_bg_toggle_show">Einblenden</button>
+          <button id="btn-bg-remove" class="danger" disabled data-i18n="btn_bg_remove">Entfernen</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label" data-i18n="group_data">Vektordaten</div>
+        <textarea class="data" id="data-view" readonly></textarea>
+      </div>
+
+      <div class="hint" id="hint">
+        <span data-i18n="hint_draw"><b>Linien-/Kurven-Pfad:</b> jeder Klick setzt einen weiteren Punkt (rastet am Grid
+          ein). Abschließen per Doppelklick, <b>Enter</b> oder Button. Klick auf den <b>Startpunkt</b> schließt die Form
+          direkt. <b>Escape</b> bricht ab.</span><br>
+        <span data-i18n="hint_ellipse"><b>Kreis/Ellipse:</b> klicken und ziehen spannt das Begrenzungsrechteck auf.
+          <b>Shift</b> gedrückt halten = perfekter Kreis. Entsteht als geschlossener Kurvenpfad, danach normal
+          bearbeitbar.</span><br>
+        <span data-i18n="hint_rect"><b>Rechteck:</b> klicken und ziehen spannt die Fläche auf. <b>Shift</b> gedrückt
+          halten = perfektes Quadrat. Entsteht als geschlossener Linienpfad, danach normal bearbeitbar (auch einzelne
+          Kanten in Kurven umwandelbar).</span><br>
+        <span data-i18n="hint_star"><b>Stern/Zahnrad:</b> Form (Stern/Zahnrad), Zacken/Zähne und Tiefe links einstellen,
+          dann klicken und ziehen spannt das Begrenzungsrechteck auf. <b>Shift</b> gedrückt halten = gleichmäßige
+          Proportionen. Entsteht als geschlossener Linienpfad, danach normal bearbeitbar.</span><br>
+        <span data-i18n="hint_edit"><b>Bearbeiten:</b> Ankerpunkte (weiß) und Kontrollpunkte (orange) ziehen — rasten am
+          Grid ein. <b>Doppelklick auf ein Segment</b> fügt dort einen neuen Punkt ein, <b>Rechtsklick auf einen
+            Ankerpunkt</b> entfernt ihn wieder. Klick auf ein Segment (nicht auf einen Punkt) wählt es für die
+          Umwandlung Linie ↔ Kurve aus. Einen offenen Endpunkt nah an einen anderen offenen Endpunkt ziehen (weißer Ring
+          erscheint) verschmilzt beide — schließt so einen Pfad oder verbindet zwei Pfade zu einem.</span><br>
+        <span data-i18n="hint_transform"><b>Transformieren:</b> Pfad anklicken, dann per Anfasser verschieben, skalieren
+          oder drehen. <b>Ecken</b> = gleichmäßig skalieren, <b>Rauten an den Kanten</b> = nur X- bzw. nur Y-Richtung
+          skalieren, <b>Punkt oben</b> = drehen. <b>Umschalt+Klick</b> fügt Pfade zur Auswahl hinzu/entfernt sie, Ziehen
+          auf leerer Fläche zieht ein Auswahlrechteck auf — mehrere Pfade lassen sich so gemeinsam transformieren. Beim
+          Loslassen wird wieder aufs Grid gerastet.</span><br>
+        <span data-i18n="hint_perspective"><b>Perspektivisch verzerren:</b> Pfad(e) anklicken, dann eine der vier
+          <b>Ecken</b> des Rahmens einzeln ziehen — die Auswahl wird wie eine Fläche im Raum verzerrt
+          (Fluchtpunkt-Effekt). Ziehen <b>innerhalb</b> des Rahmens verschiebt die ganze Auswahl.</span>
+      </div>
+
+      <div class="status" id="status">Bereit.</div>
+    </aside>
+
+    <main><canvas id="canvas"></canvas></main>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // ---------- Übersetzungen ----------
+      let lang = 'de';
+      const I18N = {
+        de: {
+          brand_title: 'Pfad-Rasterizer',
+          brand_sub: 'Mehrpunkt-Pfade, rasterisiert',
+          group_tool: 'Werkzeug',
+          group_star: 'Stern / Zahnrad',
+          group_history: 'Verlauf',
+          group_thickness: 'Linienstärke',
+          group_color: 'Farbe',
+          group_selection: 'Auswahl',
+          group_order: 'Reihenfolge',
+          group_file: 'Datei',
+          group_bg: 'Hintergrundbild',
+          group_data: 'Vektordaten',
+          btn_finish: 'Pfad abschließen (Enter)',
+          btn_undo: '↶ Rückgängig',
+          btn_redo: '↷ Wiederholen',
+          color_line_label: 'Linie',
+          color_fill_label: 'Füllung',
+          fill_hint: 'Farbwahl bei „Füllung" aktiviert sie automatisch. Sichtbar wird sie nur bei geschlossenen Pfaden.',
+          btn_close: 'Pfad schließen',
+          btn_delete: 'Löschen',
+          btn_mirror_h: 'Horizontal spiegeln',
+          btn_mirror_v: 'Vertikal spiegeln',
+          btn_duplicate: 'Duplizieren',
+          btn_order_front: 'Ganz nach vorne',
+          btn_order_back: 'Ganz nach hinten',
+          btn_order_forward: 'Eine Ebene vor',
+          btn_order_backward: 'Eine Ebene zurück',
+          btn_toggle_conn: 'Segment umwandeln',
+          btn_save: 'Speichern',
+          btn_load: 'Laden',
+          btn_export: 'Als JSON exportieren',
+          btn_import: 'JSON importieren',
+          btn_clear: 'Alles löschen',
+          btn_bg_select: 'Bild auswählen',
+          bg_opacity_label: 'Transparenz',
+          btn_bg_remove: 'Entfernen',
+          status_ready: 'Bereit.',
+          status_mirrored_h: 'Horizontal gespiegelt.',
+          status_mirrored_v: 'Vertikal gespiegelt.',
+          status_mirror_none: 'Nichts ausgewählt zum Spiegeln.',
+          status_duplicated: 'Pfad dupliziert.',
+          status_duplicated_n: '{n} Pfade dupliziert.',
+          status_duplicate_none: 'Nichts ausgewählt zum Duplizieren.',
+          status_ordered_front: 'Nach vorne geholt.',
+          status_ordered_back: 'Nach hinten geschickt.',
+          status_ordered_forward: 'Eine Ebene nach vorne.',
+          status_ordered_backward: 'Eine Ebene nach hinten.',
+          status_order_none: 'Nichts ausgewählt.',
+          btn_line: 'Linien-Pfad',
+          btn_curve: 'Kurven-Pfad',
+          btn_select: 'Bearbeiten',
+          btn_transform: 'Transformieren',
+          btn_perspective: 'Perspektivisch verzerren',
+          btn_ellipse: 'Kreis / Ellipse',
+          btn_rect: 'Rechteck',
+          btn_star: 'Stern / Zahnrad',
+          btn_star_mode_star: 'Stern',
+          btn_star_mode_gear: 'Zahnrad',
+          label_star_points: 'Zacken',
+          label_star_teeth: 'Zähne',
+          label_star_depth: 'Tiefe',
+          lang_label: 'Sprache',
+          hint_draw: '<b>Linien-/Kurven-Pfad:</b> jeder Klick setzt einen weiteren Punkt (rastet am Grid ein). Abschließen per Doppelklick, <b>Enter</b> oder Button. Klick auf den <b>Startpunkt</b> schließt die Form direkt. <b>Escape</b> bricht ab.',
+          hint_ellipse: '<b>Kreis/Ellipse:</b> klicken und ziehen spannt das Begrenzungsrechteck auf. <b>Shift</b> gedrückt halten = perfekter Kreis. Entsteht als geschlossener Kurvenpfad, danach normal bearbeitbar.',
+          hint_rect: '<b>Rechteck:</b> klicken und ziehen spannt die Fläche auf. <b>Shift</b> gedrückt halten = perfektes Quadrat. Entsteht als geschlossener Linienpfad, danach normal bearbeitbar (auch einzelne Kanten in Kurven umwandelbar).',
+          hint_star: '<b>Stern/Zahnrad:</b> Form (Stern/Zahnrad), Zacken/Zähne und Tiefe links einstellen, dann klicken und ziehen spannt das Begrenzungsrechteck auf. <b>Shift</b> gedrückt halten = gleichmäßige Proportionen. Entsteht als geschlossener Linienpfad, danach normal bearbeitbar.',
+          hint_edit: '<b>Bearbeiten:</b> Ankerpunkte (weiß) und Kontrollpunkte (orange) ziehen — rasten am Grid ein. <b>Doppelklick auf ein Segment</b> fügt dort einen neuen Punkt ein, <b>Rechtsklick auf einen Ankerpunkt</b> entfernt ihn wieder. Klick auf ein Segment (nicht auf einen Punkt) wählt es für die Umwandlung Linie ↔ Kurve aus. Einen offenen Endpunkt nah an einen anderen offenen Endpunkt ziehen (weißer Ring erscheint) verschmilzt beide — schließt so einen Pfad oder verbindet zwei Pfade zu einem.',
+          hint_transform: '<b>Transformieren:</b> Pfad anklicken, dann per Anfasser verschieben, skalieren oder drehen. <b>Ecken</b> = gleichmäßig skalieren, <b>Rauten an den Kanten</b> = nur X- bzw. nur Y-Richtung skalieren, <b>Punkt oben</b> = drehen. Das <b>Fadenkreuz</b> in der Mitte ist der Dreh-/Skalierpunkt — frei verschiebbar (z. B. auf ein Gelenk zum Animieren), Doppelklick darauf setzt ihn zurück. <b>Umschalt+Klick</b> fügt Pfade zur Auswahl hinzu/entfernt sie, Ziehen auf leerer Fläche zieht ein Auswahlrechteck auf — mehrere Pfade lassen sich so gemeinsam transformieren. Beim Loslassen wird wieder aufs Grid gerastet.',
+          hint_perspective: '<b>Perspektivisch verzerren:</b> Pfad(e) anklicken, dann eine der vier <b>Ecken</b> des Rahmens einzeln in eine beliebige Richtung ziehen — die Auswahl wird dabei wie eine Fläche im Raum verzerrt (Fluchtpunkt-Effekt), nicht nur gestaucht. Ziehen <b>innerhalb</b> des Rahmens verschiebt die ganze Auswahl. <b>Umschalt+Klick</b> fügt Pfade hinzu/entfernt sie, Ziehen auf leerer Fläche zieht ein Auswahlrechteck auf. Beim Loslassen wird wieder aufs Grid gerastet.',
+          target_selected: '· ausgewählter Pfad',
+          target_multi: '· {n} Pfade ausgewählt',
+          target_new: '· neue Pfade',
+          close_btn_close: 'Pfad schließen',
+          close_btn_open: 'Pfad öffnen',
+          close_btn_multi: 'Auswahl schließen/öffnen',
+          conn_btn_default: 'Segment umwandeln',
+          conn_btn_to_curve: 'Segment: in Kurve umwandeln',
+          conn_btn_to_line: 'Segment: in Linie umwandeln',
+          tool_status_line: 'Werkzeug: <b>Linien-Pfad</b> — Punkte anklicken, Enter/Doppelklick zum Abschließen.',
+          tool_status_curve: 'Werkzeug: <b>Kurven-Pfad</b> — Punkte anklicken, Enter/Doppelklick zum Abschließen.',
+          tool_status_select: 'Werkzeug: <b>Bearbeiten</b> — Punkte ziehen, Rechtsklick entfernt Ankerpunkt.',
+          tool_status_transform: 'Werkzeug: <b>Transformieren</b> — Pfad anklicken, dann Anfasser ziehen.',
+          tool_status_perspective: 'Werkzeug: <b>Perspektivisch verzerren</b> — Pfad anklicken, dann eine Ecke des Rahmens ziehen.',
+          tool_status_ellipse: 'Werkzeug: <b>Kreis/Ellipse</b> — Klicken und ziehen, Shift = perfekter Kreis.',
+          tool_status_rect: 'Werkzeug: <b>Rechteck</b> — Klicken und ziehen, Shift = perfektes Quadrat.',
+          tool_status_star: 'Werkzeug: <b>Stern/Zahnrad</b> — Klicken und ziehen, Shift = gleichmäßige Proportionen. Form, Zacken/Zähne und Tiefe links einstellbar.',
+          status_segment_converted: 'Segment umgewandelt.',
+          status_path_closed: 'Pfad geschlossen.',
+          status_path_opened: 'Pfad geöffnet.',
+          status_close_need3: 'Zum Schließen sind mindestens 3 Punkte nötig.',
+          status_close_multi: '{closed} geschlossen, {opened} geöffnet{skipped}.',
+          status_close_skipped_part: ', {n} übersprungen (zu wenige Punkte)',
+          status_path_deleted: 'Pfad gelöscht.',
+          status_paths_deleted_n: '{n} Pfade gelöscht.',
+          status_all_deleted: 'Alle Pfade gelöscht.',
+          status_saved_memory: 'Im Arbeitsspeicher <b>gesichert</b> ({n} Pfade).',
+          status_no_saved: 'Kein gespeicherter Stand vorhanden.',
+          status_loaded: 'Geladen ({n} Pfade).',
+          status_exported: 'Als <b>pfade.json</b> exportiert.',
+          confirm_replace_import: 'Aktuelle Pfade werden durch die importierte Datei ersetzt. Fortfahren?',
+          status_imported: 'Aus <b>{name}</b> importiert ({n} Pfade).',
+          status_import_failed: 'Import fehlgeschlagen — Datei ist kein gültiges Pfad-JSON.',
+          status_point_inserted: 'Punkt eingefügt.',
+          status_ellipse_too_small: 'Ellipse zu klein — abgebrochen.',
+          status_rect_too_small: 'Rechteck zu klein — abgebrochen.',
+          status_star_too_small: 'Form zu klein — abgebrochen.',
+          status_merged_close: 'Endpunkte verschmolzen — Pfad geschlossen.',
+          status_merged_join: 'Zwei Pfade an den Endpunkten zu einem verschmolzen.',
+          status_node_removed: 'Ankerpunkt entfernt.',
+          status_node_min2: 'Ein Pfad braucht mindestens 2 Punkte.',
+          status_drawing_cancelled: 'Zeichnen abgebrochen.',
+          status_path_finished_n: 'Pfad abgeschlossen ({n} Punkte).',
+          confirm_clear_all: 'Wirklich alle Pfade löschen?',
+          status_bg_invalid: 'Bitte ein gültiges Bild auswählen.',
+          status_bg_loaded: 'Hintergrundbild geladen ({w}x{h}).',
+          status_bg_load_error: 'Fehler beim Laden des Bildes.',
+          status_bg_read_error: 'Fehler beim Lesen der Datei.',
+          status_bg_shown: 'Hintergrundbild eingeblendet.',
+          status_bg_hidden: 'Hintergrundbild ausgeblendet.',
+          status_bg_removed: 'Hintergrundbild entfernt.',
+          btn_bg_toggle_show: 'Einblenden',
+          btn_bg_toggle_hide: 'Ausblenden',
+          status_pivot_reset: 'Drehpunkt zurückgesetzt.'
+        },
+        en: {
+          brand_title: 'Path Rasterizer',
+          brand_sub: 'multi-point paths, rasterized',
+          group_tool: 'Tool',
+          group_star: 'Star / Gear',
+          group_history: 'History',
+          group_thickness: 'Line thickness',
+          group_color: 'Color',
+          group_selection: 'Selection',
+          group_order: 'Order',
+          group_file: 'File',
+          group_bg: 'Background image',
+          group_data: 'Vector data',
+          btn_finish: 'Finish path (Enter)',
+          btn_undo: '↶ Undo',
+          btn_redo: '↷ Redo',
+          color_line_label: 'Line',
+          color_fill_label: 'Fill',
+          fill_hint: 'Picking a fill color enables it automatically. Only visible on closed paths.',
+          btn_close: 'Close path',
+          btn_delete: 'Delete',
+          btn_mirror_h: 'Flip horizontal',
+          btn_mirror_v: 'Flip vertical',
+          btn_duplicate: 'Duplicate',
+          btn_order_front: 'Bring to front',
+          btn_order_back: 'Send to back',
+          btn_order_forward: 'Bring forward',
+          btn_order_backward: 'Send backward',
+          btn_toggle_conn: 'Convert segment',
+          btn_save: 'Save',
+          btn_load: 'Load',
+          btn_export: 'Export as JSON',
+          btn_import: 'Import JSON',
+          btn_clear: 'Clear all',
+          btn_bg_select: 'Select image',
+          bg_opacity_label: 'Opacity',
+          btn_bg_remove: 'Remove',
+          status_ready: 'Ready.',
+          status_mirrored_h: 'Flipped horizontally.',
+          status_mirrored_v: 'Flipped vertically.',
+          status_mirror_none: 'Nothing selected to flip.',
+          status_duplicated: 'Path duplicated.',
+          status_duplicated_n: '{n} paths duplicated.',
+          status_duplicate_none: 'Nothing selected to duplicate.',
+          status_ordered_front: 'Brought to front.',
+          status_ordered_back: 'Sent to back.',
+          status_ordered_forward: 'Moved one layer forward.',
+          status_ordered_backward: 'Moved one layer backward.',
+          status_order_none: 'Nothing selected.',
+          btn_line: 'Line path',
+          btn_curve: 'Curve path',
+          btn_select: 'Edit',
+          btn_transform: 'Transform',
+          btn_perspective: 'Perspective Distort',
+          btn_ellipse: 'Circle / Ellipse',
+          btn_rect: 'Rectangle',
+          btn_star: 'Star / Gear',
+          btn_star_mode_star: 'Star',
+          btn_star_mode_gear: 'Gear',
+          label_star_points: 'Points',
+          label_star_teeth: 'Teeth',
+          label_star_depth: 'Depth',
+          lang_label: 'Language',
+          hint_draw: '<b>Line/curve path:</b> each click sets another point (snaps to the grid). Finish with double-click, <b>Enter</b>, or the button. Clicking the <b>start point</b> closes the shape directly. <b>Escape</b> cancels.',
+          hint_ellipse: '<b>Circle/ellipse:</b> click and drag to span the bounding box. Hold <b>Shift</b> for a perfect circle. Created as a closed curve path, freely editable afterward.',
+          hint_rect: '<b>Rectangle:</b> click and drag to span the area. Hold <b>Shift</b> for a perfect square. Created as a closed line path, freely editable afterward (individual edges can be converted to curves too).',
+          hint_star: '<b>Star/gear:</b> set shape (star/gear), points/teeth, and depth on the left, then click and drag to span the bounding box. Hold <b>Shift</b> for even proportions. Created as a closed line path, freely editable afterward.',
+          hint_edit: '<b>Edit:</b> drag anchor points (white) and control points (orange) — they snap to the grid. <b>Double-click a segment</b> to insert a new point there, <b>right-click an anchor point</b> to remove it. Clicking a segment (not a point) selects it for line ↔ curve conversion. Dragging an open endpoint near another open endpoint (a white ring appears) merges them — closing a path or joining two paths into one.',
+          hint_transform: '<b>Transform:</b> click a path, then drag a handle to move, scale, or rotate it. <b>Corners</b> = scale uniformly, <b>diamonds on the edges</b> = scale X or Y only, <b>top point</b> = rotate. The <b>crosshair</b> in the middle is the rotation/scale pivot — freely movable (e.g. onto a joint for animation), double-click it to reset. <b>Shift+click</b> adds/removes paths from the selection, dragging on empty space draws a selection rectangle — several paths can be transformed together this way. Releasing snaps back to the grid.',
+          hint_perspective: '<b>Perspective distort:</b> click a path, then drag one of the four <b>corners</b> of the frame individually in any direction — the selection warps like a plane in 3D space (a vanishing-point effect), not a simple squash. Dragging <b>inside</b> the frame moves the whole selection. <b>Shift+click</b> adds/removes paths, dragging on empty space draws a selection rectangle. Releasing snaps back to the grid.',
+          target_selected: '· selected path',
+          target_multi: '· {n} paths selected',
+          target_new: '· new paths',
+          close_btn_close: 'Close path',
+          close_btn_open: 'Open path',
+          close_btn_multi: 'Close/open selection',
+          conn_btn_default: 'Convert segment',
+          conn_btn_to_curve: 'Segment: convert to curve',
+          conn_btn_to_line: 'Segment: convert to line',
+          tool_status_line: 'Tool: <b>Line path</b> — click points, Enter/double-click to finish.',
+          tool_status_curve: 'Tool: <b>Curve path</b> — click points, Enter/double-click to finish.',
+          tool_status_select: 'Tool: <b>Edit</b> — drag points, right-click removes an anchor point.',
+          tool_status_transform: 'Tool: <b>Transform</b> — click a path, then drag a handle.',
+          tool_status_perspective: 'Tool: <b>Perspective Distort</b> — click a path, then drag a corner of the frame.',
+          tool_status_ellipse: 'Tool: <b>Circle/Ellipse</b> — click and drag, Shift = perfect circle.',
+          tool_status_rect: 'Tool: <b>Rectangle</b> — click and drag, Shift = perfect square.',
+          tool_status_star: 'Tool: <b>Star/Gear</b> — click and drag, Shift = even proportions. Shape, points/teeth, and depth adjustable on the left.',
+          status_segment_converted: 'Segment converted.',
+          status_path_closed: 'Path closed.',
+          status_path_opened: 'Path opened.',
+          status_close_need3: 'At least 3 points are needed to close a path.',
+          status_close_multi: '{closed} closed, {opened} opened{skipped}.',
+          status_close_skipped_part: ', {n} skipped (too few points)',
+          status_path_deleted: 'Path deleted.',
+          status_paths_deleted_n: '{n} paths deleted.',
+          status_all_deleted: 'All paths deleted.',
+          status_saved_memory: '<b>Saved</b> in memory ({n} paths).',
+          status_no_saved: 'No saved state available.',
+          status_loaded: 'Loaded ({n} paths).',
+          status_exported: 'Exported as <b>pfade.json</b>.',
+          confirm_replace_import: 'The current paths will be replaced by the imported file. Continue?',
+          status_imported: 'Imported from <b>{name}</b> ({n} paths).',
+          status_import_failed: 'Import failed — the file is not a valid path JSON.',
+          status_point_inserted: 'Point inserted.',
+          status_ellipse_too_small: 'Ellipse too small — cancelled.',
+          status_rect_too_small: 'Rectangle too small — cancelled.',
+          status_star_too_small: 'Shape too small — cancelled.',
+          status_merged_close: 'Endpoints merged — path closed.',
+          status_merged_join: 'Two paths merged into one at their endpoints.',
+          status_node_removed: 'Anchor point removed.',
+          status_node_min2: 'A path needs at least 2 points.',
+          status_drawing_cancelled: 'Drawing cancelled.',
+          status_path_finished_n: 'Path finished ({n} points).',
+          confirm_clear_all: 'Really delete all paths?',
+          status_bg_invalid: 'Please select a valid image.',
+          status_bg_loaded: 'Background image loaded ({w}x{h}).',
+          status_bg_load_error: 'Error loading the image.',
+          status_bg_read_error: 'Error reading the file.',
+          status_bg_shown: 'Background image shown.',
+          status_bg_hidden: 'Background image hidden.',
+          status_bg_removed: 'Background image removed.',
+          btn_bg_toggle_show: 'Show',
+          btn_bg_toggle_hide: 'Hide',
+          status_pivot_reset: 'Pivot point reset.'
+        }
+      };
+      function t(key, vars) {
+        const s = (I18N[lang] && I18N[lang][key] !== undefined) ? I18N[lang][key] : (I18N.de[key] || key);
+        if (!vars) return s;
+        return s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] !== undefined ? vars[k] : m));
+      }
+
+
+      // ---------- Konfiguration ----------
+      const CELL = 10;
+      const COLS = 92;
+      const ROWS = 60;
+
+      const canvas = document.getElementById('canvas');
+      canvas.width = COLS * CELL;
+      canvas.height = ROWS * CELL;
+      const ctx = canvas.getContext('2d');
+
+      // ---------- Persistenz-Ersatz ----------
+      // Echtes localStorage funktioniert in dieser Vorschau nicht zuverlaessig,
+      // daher In-Memory-Ersatz. In einer lokal geoeffneten Kopie ausserhalb dieser
+      // Vorschau kann memoryStore 1:1 durch window.localStorage ersetzt werden.
+      const memoryStore = {};
+      function saveToStore(key, value) { memoryStore[key] = value; }
+      function loadFromStore(key) { return memoryStore[key]; }
+
+      // ---------- Datenmodell ----------
+      // path = { id, thickness, closed, nodes:[{x,y},...],
+      //          conns:[{type:'line'}|{type:'curve',c1,c2}, ...],   // Länge = nodes.length - 1
+      //          closingConn: {type:'line'}|{type:'curve',c1,c2}|null }  // nur wenn closed
+      let paths = [];
+      let nextId = 1;
+      let tool = 'line'; // 'line' | 'curve' | 'select' | 'transform' | 'perspective' | 'ellipse' | 'rect' | 'star'
+      let selectedId = null;
+      let selectedConn = null; // { pathId, ref: connIndex(number) | 'closing' } — ausgewählte einzelne Verbindung
+      let selectedIds = [];    // Mehrfachauswahl im Transformieren-Werkzeug
+      let marquee = null;      // { startPx:{x,y}, curPx:{x,y}, additive:boolean } — Auswahlrechteck
+      let customPivot = null;  // {x,y} in Punktraum — überschreibt den BBox-Mittelpunkt als Dreh-/Skalierzentrum
+      let perspQuad = null;    // {nw,ne,se,sw} in Punktraum — Eckpunkte des Verzerrrahmens im Perspektivisch-verzerren-Werkzeug
+      let defaultThickness = 2;
+      let defaultColor = '#6ee7c2';
+      let defaultFillEnabled = false;
+      let defaultFillColor = '#2f5b4d';
+
+      let drawingPath = null; // Pfad im Entstehen
+      let ellipseDrag = null; // { start:{x,y} } während des Aufziehens einer Ellipse
+      let rectDrag = null;    // { start:{x,y} } während des Aufziehens eines Rechtecks
+      let starDrag = null;    // { start:{x,y} } während des Aufziehens eines Sterns/Zahnrads
+      let starShapeMode = 'star'; // 'star' | 'gear' — aktuell gewählte Form im Stern/Zahnrad-Werkzeug
+      let starPoints = 5;      // Anzahl Zacken (Stern) bzw. Zähne (Zahnrad)
+      let starInnerRatio = 0.45; // Tiefe der Einbuchtungen, 0..1 relativ zum Außenradius
+
+      let editDrag = null;      // { pathId, kind:'node'|'c1'|'c2', nodeIndex|connIndex }
+      let transformDrag = null; // { kind:'move'|'scale'|'rotate', pathId, pivot, startPoint, snapshot, startAngle, startDist }
+      let perspDrag = null;     // { kind:'corner'|'move', corner, srcQuad, snapshots, startPoint } während des Ziehens im Perspektivisch-verzerren-Werkzeug
+
+      let history = [];
+      let historyIndex = -1;
+
+      // ---------- Hintergrundbild ----------
+      let bgImage = null;           // HTMLImageElement
+      let bgImageVisible = true;    // Toggle für Ein-/Ausblenden
+      let bgOpacity = 0.5;          // Transparenz 0-1
+
+      function updateBgButtons() {
+        const hasImage = bgImage !== null;
+        const toggleBtn = document.getElementById('btn-bg-toggle');
+        const removeBtn = document.getElementById('btn-bg-remove');
+        const opacitySlider = document.getElementById('bg-opacity');
+        const opacityVal = document.getElementById('bg-opacity-val');
+
+        toggleBtn.disabled = !hasImage;
+        removeBtn.disabled = !hasImage;
+        opacitySlider.disabled = !hasImage;
+
+        if (hasImage) {
+          toggleBtn.textContent = bgImageVisible ? t('btn_bg_toggle_hide') : t('btn_bg_toggle_show');
+          toggleBtn.classList.toggle('active', bgImageVisible);
+        } else {
+          toggleBtn.textContent = t('btn_bg_toggle_show');
+          toggleBtn.classList.remove('active');
+        }
+      }
+
+      function loadBgImage(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          setStatus(t('status_bg_invalid'));
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            bgImage = img;
+            bgImageVisible = true;
+            updateBgButtons();
+            render();
+            setStatus(t('status_bg_loaded', { w: img.width, h: img.height }));
+          };
+          img.onerror = function () {
+            setStatus(t('status_bg_load_error'));
+          };
+          img.src = e.target.result;
+        };
+        reader.onerror = function () {
+          setStatus(t('status_bg_read_error'));
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function toggleBgImage() {
+        if (!bgImage) return;
+        bgImageVisible = !bgImageVisible;
+        updateBgButtons();
+        render();
+        setStatus(bgImageVisible ? t('status_bg_shown') : t('status_bg_hidden'));
+      }
+
+      function removeBgImage() {
+        if (!bgImage) return;
+        bgImage = null;
+        bgImageVisible = true;
+        bgOpacity = 0.5;
+        document.getElementById('bg-opacity').value = 50;
+        document.getElementById('bg-opacity-val').textContent = '50%';
+        updateBgButtons();
+        render();
+        setStatus(t('status_bg_removed'));
+      }
+
+      function drawBackgroundImage() {
+        if (!bgImage || !bgImageVisible) return;
+        ctx.save();
+        ctx.globalAlpha = bgOpacity;
+
+        // Proportionale Einpassung (contain) in die Canvas-Fläche
+        const imgW = bgImage.width;
+        const imgH = bgImage.height;
+        const canvasW = canvas.width;
+        const canvasH = canvas.height;
+
+        let drawW, drawH, drawX, drawY;
+
+        const scaleX = canvasW / imgW;
+        const scaleY = canvasH / imgH;
+        const scale = Math.min(scaleX, scaleY);
+
+        drawW = imgW * scale;
+        drawH = imgH * scale;
+        drawX = (canvasW - drawW) / 2;
+        drawY = (canvasH - drawH) / 2;
+
+        ctx.drawImage(bgImage, drawX, drawY, drawW, drawH);
+        ctx.restore();
+      }
+
+      // ---------- Utility: Punkte ----------
+      function pt(x, y) { return { x, y }; }
+      function clonePaths() { return JSON.parse(JSON.stringify(paths)); }
+
+      function pushHistory() {
+        history = history.slice(0, historyIndex + 1);
+        history.push(clonePaths());
+        if (history.length > 100) history.shift();
+        historyIndex = history.length - 1;
+        saveToStore('paths_head', clonePaths());
+        updateHistoryButtons();
+        updateDataView();
+      }
+      function undo() {
+        if (historyIndex <= 0) return;
+        historyIndex--;
+        paths = JSON.parse(JSON.stringify(history[historyIndex]));
+        selectedId = null; selectedConn = null;
+        updateHistoryButtons(); updateDataView(); render();
+      }
+      function redo() {
+        if (historyIndex >= history.length - 1) return;
+        historyIndex++;
+        paths = JSON.parse(JSON.stringify(history[historyIndex]));
+        selectedId = null; selectedConn = null;
+        updateHistoryButtons(); updateDataView(); render();
+      }
+
+      // ---------- Rasterisierung ----------
+      function bresenham(x0, y0, x1, y1) {
+        const pts = [];
+        x0 = Math.round(x0); y0 = Math.round(y0);
+        x1 = Math.round(x1); y1 = Math.round(y1);
+        let dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0);
+        let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+        let err = dx + dy;
+        let x = x0, y = y0;
+        while (true) {
+          pts.push({ x, y });
+          if (x === x1 && y === y1) break;
+          const e2 = 2 * err;
+          if (e2 >= dy) { err += dy; x += sx; }
+          if (e2 <= dx) { err += dx; y += sy; }
+        }
+        return pts;
+      }
+
+      function cubicPoint(p0, c1, c2, p3, t) {
+        const mt = 1 - t;
+        const a = mt * mt * mt, b = 3 * mt * mt * t, c = 3 * mt * t * t, d = t * t * t;
+        return { x: a * p0.x + b * c1.x + c * c2.x + d * p3.x, y: a * p0.y + b * c1.y + c * c2.y + d * p3.y };
+      }
+
+      function rasterizeConn(p0, p3, conn) {
+        if (conn.type === 'line') {
+          return bresenham(p0.x, p0.y, p3.x, p3.y);
+        }
+        const c1 = conn.c1, c2 = conn.c2;
+        const approxLen =
+          Math.hypot(p0.x - c1.x, p0.y - c1.y) +
+          Math.hypot(c1.x - c2.x, c1.y - c2.y) +
+          Math.hypot(c2.x - p3.x, c2.y - p3.y);
+        const samples = Math.max(20, Math.min(400, Math.round(approxLen * 6)));
+        const cells = [];
+        let prev = null;
+        for (let i = 0; i <= samples; i++) {
+          const t = i / samples;
+          const p = cubicPoint(p0, c1, c2, p3, t);
+          const cell = { x: Math.round(p.x), y: Math.round(p.y) };
+          if (!prev) {
+            cells.push(cell);
+          } else if (prev.x !== cell.x || prev.y !== cell.y) {
+            const dx = Math.abs(cell.x - prev.x), dy = Math.abs(cell.y - prev.y);
+            if (dx <= 1 && dy <= 1) {
+              cells.push(cell);
+            } else {
+              const seg2 = bresenham(prev.x, prev.y, cell.x, cell.y);
+              for (let k = 1; k < seg2.length; k++) cells.push(seg2[k]);
+            }
+          }
+          prev = cell;
+        }
+        return cells;
+      }
+
+      function rasterizePath(path) {
+        const cells = [];
+        for (let i = 0; i < path.conns.length; i++) {
+          const c = rasterizeConn(path.nodes[i], path.nodes[i + 1], path.conns[i]);
+          cells.push.apply(cells, c);
+        }
+        if (path.closed && path.closingConn && path.nodes.length > 1) {
+          const last = path.nodes[path.nodes.length - 1], first = path.nodes[0];
+          const c = rasterizeConn(last, first, path.closingConn);
+          cells.push.apply(cells, c);
+        }
+        if (path.nodes.length === 1) {
+          cells.push({ x: Math.round(path.nodes[0].x), y: Math.round(path.nodes[0].y) });
+        }
+        return cells;
+      }
+
+      // ---------- Füllung (nur geschlossene Pfade) ----------
+      // Läuft den Pfad glatt (nicht gerastert) ab, um ein Füll-Polygon für die Scanline-Füllung zu erhalten
+      function getFillPolygon(path) {
+        const poly = [];
+        const addConn = (p0, p3, conn) => {
+          if (conn.type === 'line') { poly.push(p0); }
+          else {
+            const steps = 24;
+            for (let s = 0; s < steps; s++) poly.push(cubicPoint(p0, conn.c1, conn.c2, p3, s / steps));
+          }
+        };
+        for (let i = 0; i < path.conns.length; i++) {
+          addConn(path.nodes[i], path.nodes[i + 1], path.conns[i]);
+        }
+        if (path.closed && path.closingConn) {
+          addConn(path.nodes[path.nodes.length - 1], path.nodes[0], path.closingConn);
+        }
+        return poly;
+      }
+
+      function fillCellsForPath(path) {
+        if (!path.closed || path.nodes.length < 3) return [];
+        const poly = getFillPolygon(path);
+        if (poly.length < 3) return [];
+        let minY = Infinity, maxY = -Infinity;
+        poly.forEach(p => { minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); });
+        const y0 = Math.max(0, Math.floor(minY)), y1 = Math.min(ROWS - 1, Math.ceil(maxY));
+        const cells = [];
+        for (let gy = y0; gy <= y1; gy++) {
+          const scanY = gy + 0.5;
+          const xs = [];
+          for (let i = 0; i < poly.length; i++) {
+            const a = poly[i], b = poly[(i + 1) % poly.length];
+            if ((a.y <= scanY && b.y > scanY) || (b.y <= scanY && a.y > scanY)) {
+              const t = (scanY - a.y) / (b.y - a.y);
+              xs.push(a.x + t * (b.x - a.x));
+            }
+          }
+          xs.sort((a, b) => a - b);
+          for (let i = 0; i + 1 < xs.length; i += 2) {
+            const gx0 = Math.max(0, Math.round(xs[i])), gx1 = Math.min(COLS - 1, Math.round(xs[i + 1]));
+            for (let gx = gx0; gx <= gx1; gx++) cells.push({ x: gx, y: gy });
+          }
+        }
+        return cells;
+      }
+
+      function stampThickness(cells, thickness) {
+        const r = Math.floor((thickness - 1) / 2);
+        const extra = (thickness - 1) % 2;
+        const set = new Map();
+        for (const c of cells) {
+          for (let oy = -r; oy <= r + extra; oy++) {
+            for (let ox = -r; ox <= r + extra; ox++) {
+              if (r > 0 && (ox * ox + oy * oy) > (r + 0.7) * (r + 0.7)) continue;
+              const x = c.x + ox, y = c.y + oy;
+              if (x < 0 || y < 0 || x >= COLS || y >= ROWS) continue;
+              set.set(x + ',' + y, { x, y });
+            }
+          }
+        }
+        return Array.from(set.values());
+      }
+
+      // ---------- Koordinaten-Hilfen ----------
+      function clampCell(x, y) {
+        return { x: Math.max(0, Math.min(COLS - 1, x)), y: Math.max(0, Math.min(ROWS - 1, y)) };
+      }
+      function relPixel(evt) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+      }
+      function eventToCell(evt) {
+        const p = relPixel(evt);
+        return clampCell(Math.floor(p.x / CELL), Math.floor(p.y / CELL));
+      }
+      function pixelToPoint(px, py) { return { x: px / CELL, y: py / CELL }; }
+
+      // ---------- Kurven-Autotangente ----------
+      function autoCurveControls(p0, p3) {
+        const dx = p3.x - p0.x, dy = p3.y - p0.y;
+        return {
+          c1: pt(p0.x + dx / 3 - dy / 4, p0.y + dy / 3 + dx / 4),
+          c2: pt(p0.x + dx * 2 / 3 - dy / 4, p0.y + dy * 2 / 3 + dx / 4)
+        };
+      }
+
+      // ---------- Ellipse/Kreis als geschlossener 4-Punkt-Kurvenpfad ----------
+      // Klassische Bézier-Näherung eines Ovals (Kappa = 0.5522847498)
+      function buildEllipsePath(a, b) {
+        const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+        const rx = Math.abs(b.x - a.x) / 2, ry = Math.abs(b.y - a.y) / 2;
+        const k = 0.5522847498;
+        const N = pt(cx, cy - ry), E = pt(cx + rx, cy), S = pt(cx, cy + ry), W = pt(cx - rx, cy);
+        const nodes = [N, E, S, W];
+        const conns = [
+          { type: 'curve', c1: pt(N.x + rx * k, N.y), c2: pt(E.x, E.y - ry * k) }, // N -> E
+          { type: 'curve', c1: pt(E.x, E.y + ry * k), c2: pt(S.x + rx * k, S.y) }, // E -> S
+          { type: 'curve', c1: pt(S.x - rx * k, S.y), c2: pt(W.x, W.y + ry * k) }  // S -> W
+        ];
+        const closingConn = { type: 'curve', c1: pt(W.x, W.y - ry * k), c2: pt(N.x - rx * k, N.y) }; // W -> N
+        return { id: 'tmp', thickness: defaultThickness, color: defaultColor, fillEnabled: defaultFillEnabled, fillColor: defaultFillColor, closed: true, nodes, conns, closingConn };
+      }
+
+      // ---------- Rechteck als geschlossener 4-Punkt-Linienpfad ----------
+      function buildRectPath(a, b) {
+        const x0 = Math.min(a.x, b.x), x1 = Math.max(a.x, b.x);
+        const y0 = Math.min(a.y, b.y), y1 = Math.max(a.y, b.y);
+        const nodes = [pt(x0, y0), pt(x1, y0), pt(x1, y1), pt(x0, y1)]; // TL -> TR -> BR -> BL
+        const conns = [{ type: 'line' }, { type: 'line' }, { type: 'line' }];
+        const closingConn = { type: 'line' }; // BL -> TL
+        return { id: 'tmp', thickness: defaultThickness, color: defaultColor, fillEnabled: defaultFillEnabled, fillColor: defaultFillColor, closed: true, nodes, conns, closingConn };
+      }
+
+      // ---------- Stern/Zahnrad als geschlossener Linienpfad ----------
+      // Erzeugt abwechselnd Außen-/Innenpunkte (Stern) bzw. flache Zahnkuppen mit Einbuchtung (Zahnrad),
+      // eingeschrieben in das Begrenzungsrechteck a-b (wie bei der Ellipse). rx/ry erlauben elliptische Streckung.
+      function buildStarShapePath(a, b) {
+        const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+        const rx = Math.abs(b.x - a.x) / 2, ry = Math.abs(b.y - a.y) / 2;
+        const n = Math.max(3, starPoints | 0);
+        const ir = Math.min(0.95, Math.max(0.05, starInnerRatio));
+        const nodes = [];
+        if (starShapeMode === 'gear') {
+          const step = (Math.PI * 2) / n;
+          const toothHalf = step * 0.28; // Breite der Zahnkuppe relativ zur Schrittweite
+          for (let i = 0; i < n; i++) {
+            const centerAngle = -Math.PI / 2 + i * step;
+            const a1 = centerAngle - toothHalf, a2 = centerAngle + toothHalf;
+            nodes.push(pt(cx + rx * Math.cos(a1), cy + ry * Math.sin(a1))); // Zahnkuppe Anfang
+            nodes.push(pt(cx + rx * Math.cos(a2), cy + ry * Math.sin(a2))); // Zahnkuppe Ende
+            const valleyAngle = centerAngle + step / 2;
+            nodes.push(pt(cx + rx * ir * Math.cos(valleyAngle), cy + ry * ir * Math.sin(valleyAngle))); // Zahnlücke
+          }
+        } else {
+          const step = Math.PI / n;
+          for (let i = 0; i < n; i++) {
+            const outerAngle = -Math.PI / 2 + i * 2 * step;
+            const innerAngle = outerAngle + step;
+            nodes.push(pt(cx + rx * Math.cos(outerAngle), cy + ry * Math.sin(outerAngle))); // Spitze
+            nodes.push(pt(cx + rx * ir * Math.cos(innerAngle), cy + ry * ir * Math.sin(innerAngle))); // Einbuchtung
+          }
+        }
+        const conns = [];
+        for (let i = 0; i < nodes.length - 1; i++) conns.push({ type: 'line' });
+        const closingConn = { type: 'line' };
+        return { id: 'tmp', thickness: defaultThickness, color: defaultColor, fillEnabled: defaultFillEnabled, fillColor: defaultFillColor, closed: true, nodes, conns, closingConn };
+      }
+
+      // ---------- Verbindungstyp umwandeln ----------
+      function toggleConnType(pathId, ref) {
+        const path = paths.find(p => p.id === pathId);
+        if (!path) return;
+        const conn = getConn(path, ref);
+        if (!conn) return;
+        const { p0, p3 } = getConnEndpoints(path, ref);
+        if (conn.type === 'line') {
+          const cc = autoCurveControls(p0, p3);
+          conn.type = 'curve'; conn.c1 = cc.c1; conn.c2 = cc.c2;
+        } else {
+          conn.type = 'line';
+          delete conn.c1; delete conn.c2;
+        }
+      }
+
+      // ---------- Mehrpunkt-Zeichnen ----------
+      function startDrawing(cell) {
+        drawingPath = { id: 'tmp', thickness: defaultThickness, color: defaultColor, fillEnabled: defaultFillEnabled, fillColor: defaultFillColor, closed: false, closingConn: null, nodes: [pt(cell.x, cell.y)], conns: [] };
+        updateFinishButton();
+      }
+      function addDrawPoint(cell) {
+        // Klick auf den Startpunkt schließt den Pfad, statt einen doppelten Punkt zu setzen
+        const start = drawingPath.nodes[0];
+        if (drawingPath.nodes.length >= 3 && cell.x === start.x && cell.y === start.y) {
+          closeDrawing();
+          return;
+        }
+        const prev = drawingPath.nodes[drawingPath.nodes.length - 1];
+        const next = pt(cell.x, cell.y);
+        if (tool === 'curve') {
+          const cc = autoCurveControls(prev, next);
+          drawingPath.conns.push({ type: 'curve', c1: cc.c1, c2: cc.c2 });
+        } else {
+          drawingPath.conns.push({ type: 'line' });
+        }
+        drawingPath.nodes.push(next);
+      }
+      function closeDrawing() {
+        if (!drawingPath || drawingPath.nodes.length < 3) return;
+        const last = drawingPath.nodes[drawingPath.nodes.length - 1];
+        const first = drawingPath.nodes[0];
+        if (tool === 'curve') {
+          const cc = autoCurveControls(last, first);
+          drawingPath.closingConn = { type: 'curve', c1: cc.c1, c2: cc.c2 };
+        } else {
+          drawingPath.closingConn = { type: 'line' };
+        }
+        drawingPath.closed = true;
+        finishDrawing();
+      }
+      function finishDrawing() {
+        if (!drawingPath || drawingPath.nodes.length < 2) {
+          drawingPath = null; updateFinishButton(); render();
+          return;
+        }
+        drawingPath.id = nextId++;
+        paths.push(drawingPath);
+        selectedId = drawingPath.id;
+        drawingPath = null;
+        updateFinishButton();
+        pushHistory();
+        updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton();
+        render();
+        setStatus(t('status_path_finished_n', { n: paths[paths.length - 1].nodes.length }));
+      }
+      function cancelDrawing() {
+        drawingPath = null;
+        ellipseDrag = null;
+        rectDrag = null;
+        starDrag = null;
+        updateFinishButton();
+        render();
+        setStatus(t('status_drawing_cancelled'));
+      }
+
+      // ---------- Knoten entfernen ----------
+      function removeNode(path, idx) {
+        const n = path.nodes.length;
+        if (n <= 2) return false;
+        if (idx === 0) {
+          path.nodes.splice(0, 1);
+          path.conns.splice(0, 1);
+        } else if (idx === n - 1) {
+          path.nodes.splice(idx, 1);
+          path.conns.splice(idx - 1, 1);
+        } else {
+          path.nodes.splice(idx, 1);
+          path.conns.splice(idx - 1, 2, { type: 'line' });
+        }
+        return true;
+      }
+
+      // ---------- Offene Endpunkte verschmelzen (schließt Pfade / verbindet zwei Pfade) ----------
+      const MERGE_RADIUS = 1.5; // in Rasterzellen
+
+      function reversedNodesConns(path) {
+        const nodes = path.nodes.slice().reverse();
+        const conns = path.conns.slice().reverse().map(c =>
+          c.type === 'curve' ? { type: 'curve', c1: c.c2, c2: c.c1 } : { type: 'line' }
+        );
+        return { nodes, conns };
+      }
+
+      // Sucht den nächsten offenen Endpunkt eines ANDEREN Endpunkts in der Nähe (auch am selben Pfad)
+      function findMergeTarget(sourcePathId, sourceNodeIndex, radius) {
+        if (radius === undefined) radius = MERGE_RADIUS;
+        const source = paths.find(p => p.id === sourcePathId);
+        if (!source) return null;
+        const p = source.nodes[sourceNodeIndex];
+        let best = null, bestDist = radius;
+        for (const path of paths) {
+          if (path.closed) continue; // nur offene Pfade sind verschmelzbar
+          [0, path.nodes.length - 1].forEach(idx => {
+            if (path.id === sourcePathId && idx === sourceNodeIndex) return;
+            const q = path.nodes[idx];
+            const d = Math.hypot(p.x - q.x, p.y - q.y);
+            if (d <= bestDist) { bestDist = d; best = { pathId: path.id, nodeIndex: idx }; }
+          });
+        }
+        return best;
+      }
+
+      // Führt zwei offene Endpunkte zusammen: gleicher Pfad -> schließen, verschiedene Pfade -> zu einem verbinden
+      function mergeEndpoints(aId, aIdx, bId, bIdx) {
+        const A = paths.find(p => p.id === aId);
+        const B = paths.find(p => p.id === bId);
+        if (!A || !B) return;
+
+        if (aId === bId) {
+          A.nodes[aIdx] = pt(A.nodes[bIdx].x, A.nodes[bIdx].y);
+          A.closed = true;
+          A.closingConn = { type: 'line' };
+          return;
+        }
+
+        let aNodes = A.nodes, aConns = A.conns;
+        if (aIdx === 0) { const r = reversedNodesConns(A); aNodes = r.nodes; aConns = r.conns; }
+        let bNodes = B.nodes, bConns = B.conns;
+        if (bIdx !== 0) { const r = reversedNodesConns(B); bNodes = r.nodes; bConns = r.conns; }
+
+        aNodes = aNodes.slice();
+        aNodes[aNodes.length - 1] = pt(bNodes[0].x, bNodes[0].y); // exakt aneinanderlegen
+
+        A.nodes = aNodes.concat(bNodes.slice(1));
+        A.conns = aConns.concat(bConns);
+        A.closed = false;
+        A.closingConn = null;
+
+        paths = paths.filter(p => p.id !== B.id);
+      }
+
+      // ---------- Punkt auf einem Segment einfügen ----------
+      function lerpPt(a, b, t) { return pt(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t); }
+
+      function insertNodeOnConn(path, ref, clickPoint) {
+        const conn = getConn(path, ref);
+        const { p0, p3 } = getConnEndpoints(path, ref);
+        let newNode, leftConn, rightConn;
+
+        if (conn.type === 'line') {
+          const dx = p3.x - p0.x, dy = p3.y - p0.y;
+          const lenSq = dx * dx + dy * dy;
+          let t = lenSq > 0 ? ((clickPoint.x - p0.x) * dx + (clickPoint.y - p0.y) * dy) / lenSq : 0.5;
+          t = Math.max(0.05, Math.min(0.95, t));
+          newNode = pt(Math.round(p0.x + dx * t), Math.round(p0.y + dy * t));
+          leftConn = { type: 'line' };
+          rightConn = { type: 'line' };
+        } else {
+          // Besten Kurvenparameter t per Sampling finden, dann exakt per De-Casteljau teilen
+          let bestT = 0.5, bestD = Infinity;
+          const steps = 100;
+          for (let i = 1; i < steps; i++) {
+            const t = i / steps;
+            const p = cubicPoint(p0, conn.c1, conn.c2, p3, t);
+            const d = Math.hypot(p.x - clickPoint.x, p.y - clickPoint.y);
+            if (d < bestD) { bestD = d; bestT = t; }
+          }
+          const p01 = lerpPt(p0, conn.c1, bestT), p12 = lerpPt(conn.c1, conn.c2, bestT), p23 = lerpPt(conn.c2, p3, bestT);
+          const p012 = lerpPt(p01, p12, bestT), p123 = lerpPt(p12, p23, bestT);
+          newNode = lerpPt(p012, p123, bestT);
+          leftConn = { type: 'curve', c1: p01, c2: p012 };
+          rightConn = { type: 'curve', c1: p123, c2: p23 };
+        }
+
+        if (ref === 'closing') {
+          path.nodes.push(newNode);
+          path.conns.push(leftConn);
+          path.closingConn = rightConn;
+        } else {
+          path.nodes.splice(ref + 1, 0, newNode);
+          path.conns.splice(ref, 1, leftConn, rightConn);
+        }
+      }
+
+      // ---------- Auswahl / Hit-Testing ----------
+      function pathCellSet(path) {
+        return stampThickness(rasterizePath(path), Math.max(path.thickness, 2));
+      }
+      function hitTestFilledPath(cell) {
+        for (let i = paths.length - 1; i >= 0; i--) {
+          const path = paths[i];
+          if (path.closed && path.fillEnabled) {
+            if (fillCellsForPath(path).some(c => c.x === cell.x && c.y === cell.y)) return path;
+          }
+        }
+        return null;
+      }
+      function hitTestPath(cell) {
+        for (let i = paths.length - 1; i >= 0; i--) {
+          const cells = pathCellSet(paths[i]);
+          if (cells.some(c => c.x === cell.x && c.y === cell.y)) return paths[i];
+        }
+        // Fallback: Klick in die gefüllte Fläche (nicht nur auf die Kontur) zählt ebenfalls
+        return hitTestFilledPath(cell);
+      }
+      function getConnEndpoints(path, ref) {
+        if (ref === 'closing') return { p0: path.nodes[path.nodes.length - 1], p3: path.nodes[0] };
+        return { p0: path.nodes[ref], p3: path.nodes[ref + 1] };
+      }
+      function getConn(path, ref) {
+        return ref === 'closing' ? path.closingConn : path.conns[ref];
+      }
+      function connCellSet(path, ref) {
+        const conn = getConn(path, ref);
+        if (!conn) return [];
+        const { p0, p3 } = getConnEndpoints(path, ref);
+        return stampThickness(rasterizeConn(p0, p3, conn), Math.max(path.thickness, 2));
+      }
+      function hitTestConn(cell) {
+        for (let i = paths.length - 1; i >= 0; i--) {
+          const path = paths[i];
+          for (let ci = path.conns.length - 1; ci >= 0; ci--) {
+            if (connCellSet(path, ci).some(c => c.x === cell.x && c.y === cell.y)) return { pathId: path.id, ref: ci };
+          }
+          if (path.closed && path.closingConn) {
+            if (connCellSet(path, 'closing').some(c => c.x === cell.x && c.y === cell.y)) return { pathId: path.id, ref: 'closing' };
+          }
+        }
+        return null;
+      }
+      function hitTestHandle(point, radiusCells) {
+        let best = null, bestDist = radiusCells;
+        for (const path of paths) {
+          path.nodes.forEach((p, ni) => {
+            const d = Math.hypot(p.x - point.x, p.y - point.y);
+            if (d <= bestDist) { bestDist = d; best = { pathId: path.id, kind: 'node', nodeIndex: ni }; }
+          });
+          path.conns.forEach((c, ci) => {
+            if (c.type !== 'curve') return;
+            const d1 = Math.hypot(c.c1.x - point.x, c.c1.y - point.y);
+            if (d1 <= bestDist) { bestDist = d1; best = { pathId: path.id, kind: 'c1', connIndex: ci }; }
+            const d2 = Math.hypot(c.c2.x - point.x, c.c2.y - point.y);
+            if (d2 <= bestDist) { bestDist = d2; best = { pathId: path.id, kind: 'c2', connIndex: ci }; }
+          });
+          if (path.closed && path.closingConn && path.closingConn.type === 'curve') {
+            const c = path.closingConn;
+            const d1 = Math.hypot(c.c1.x - point.x, c.c1.y - point.y);
+            if (d1 <= bestDist) { bestDist = d1; best = { pathId: path.id, kind: 'closeC1' }; }
+            const d2 = Math.hypot(c.c2.x - point.x, c.c2.y - point.y);
+            if (d2 <= bestDist) { bestDist = d2; best = { pathId: path.id, kind: 'closeC2' }; }
+          }
+        }
+        return best;
+      }
+
+      // ---------- Transform-Hilfen ----------
+      function getPathBBox(path) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        const consider = p => { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); };
+        path.nodes.forEach(consider);
+        path.conns.forEach(c => { if (c.type === 'curve') { consider(c.c1); consider(c.c2); } });
+        if (path.closed && path.closingConn && path.closingConn.type === 'curve') {
+          consider(path.closingConn.c1); consider(path.closingConn.c2);
+        }
+        return { minX, minY, maxX, maxY };
+      }
+      function getGroupBBox(ids) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        ids.forEach(id => {
+          const path = paths.find(p => p.id === id);
+          if (!path) return;
+          const b = getPathBBox(path);
+          minX = Math.min(minX, b.minX); maxX = Math.max(maxX, b.maxX);
+          minY = Math.min(minY, b.minY); maxY = Math.max(maxY, b.maxY);
+        });
+        return { minX, minY, maxX, maxY };
+      }
+      function getPivot(bbox) { return { x: (bbox.minX + bbox.maxX + 1) / 2, y: (bbox.minY + bbox.maxY + 1) / 2 }; }
+      function activePivot(bbox) { return customPivot || getPivot(bbox); }
+
+      // Spiegelt die aktive Auswahl horizontal ('x') oder vertikal ('y') um den Mittelpunkt ihrer gemeinsamen BBox
+      function mirrorSelection(axis) {
+        const ids = activeSelectionIds();
+        if (!ids.length) { setStatus(t('status_mirror_none')); return; }
+        const bbox = getGroupBBox(ids);
+        const pivot = getPivot(bbox);
+        const fn = axis === 'x'
+          ? sp => pt(2 * pivot.x - sp.x, sp.y)
+          : sp => pt(sp.x, 2 * pivot.y - sp.y);
+        ids.forEach(id => {
+          const path = paths.find(p => p.id === id);
+          if (!path) return;
+          const snapshot = JSON.parse(JSON.stringify({ nodes: path.nodes, conns: path.conns, closingConn: path.closingConn }));
+          applyTransformToPath(path, snapshot, fn);
+          snapPathToGrid(path);
+        });
+        if (tool === 'perspective') perspQuad = null;
+        pushHistory(); render();
+        setStatus(axis === 'x' ? t('status_mirrored_h') : t('status_mirrored_v'));
+      }
+
+      // Dupliziert die aktive Auswahl (leicht versetzt) und wählt die neuen Kopien aus
+      function duplicateSelection() {
+        const ids = activeSelectionIds();
+        if (!ids.length) { setStatus(t('status_duplicate_none')); return; }
+        const offset = 2; // Versatz in Rastereinheiten, damit die Kopie sichtbar neben dem Original liegt
+        const shift = p => pt(p.x + offset, p.y + offset);
+        const newIds = [];
+        ids.forEach(id => {
+          const src = paths.find(p => p.id === id);
+          if (!src) return;
+          const clone = JSON.parse(JSON.stringify(src));
+          clone.id = nextId++;
+          clone.nodes = clone.nodes.map(shift);
+          clone.conns.forEach(c => { if (c.type === 'curve') { c.c1 = shift(c.c1); c.c2 = shift(c.c2); } });
+          if (clone.closed && clone.closingConn && clone.closingConn.type === 'curve') {
+            clone.closingConn.c1 = shift(clone.closingConn.c1);
+            clone.closingConn.c2 = shift(clone.closingConn.c2);
+          }
+          paths.push(clone);
+          newIds.push(clone.id);
+        });
+        if (!newIds.length) return;
+        selectedConn = null;
+        customPivot = null;
+        perspQuad = null;
+        if (tool === 'transform' || tool === 'perspective') {
+          selectedIds = newIds;
+          selectedId = newIds[newIds.length - 1];
+        } else {
+          selectedIds = [];
+          selectedId = newIds[newIds.length - 1];
+        }
+        updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton();
+        pushHistory(); render();
+        setStatus(newIds.length > 1 ? t('status_duplicated_n', { n: newIds.length }) : t('status_duplicated'));
+      }
+
+      // Ändert die Zeichenreihenfolge (Z-Reihenfolge) der aktiven Auswahl innerhalb des paths-Arrays.
+      // 'front'/'back' holen die Auswahl komplett vor/hinter alle anderen Pfade, unter Beibehaltung ihrer relativen
+      // Reihenfolge zueinander. 'forward'/'backward' verschieben sie jeweils um eine Ebene.
+      function reorderSelection(mode) {
+        const ids = activeSelectionIds();
+        if (!ids.length) { setStatus(t('status_order_none')); return; }
+        const idSet = new Set(ids);
+
+        if (mode === 'front' || mode === 'back') {
+          const selectedPaths = paths.filter(p => idSet.has(p.id));
+          const others = paths.filter(p => !idSet.has(p.id));
+          paths = mode === 'front' ? others.concat(selectedPaths) : selectedPaths.concat(others);
+        } else if (mode === 'forward') {
+          for (let i = paths.length - 2; i >= 0; i--) {
+            if (idSet.has(paths[i].id) && !idSet.has(paths[i + 1].id)) {
+              const tmp = paths[i]; paths[i] = paths[i + 1]; paths[i + 1] = tmp;
+            }
+          }
+        } else if (mode === 'backward') {
+          for (let i = 1; i < paths.length; i++) {
+            if (idSet.has(paths[i].id) && !idSet.has(paths[i - 1].id)) {
+              const tmp = paths[i]; paths[i] = paths[i - 1]; paths[i - 1] = tmp;
+            }
+          }
+        }
+
+        pushHistory(); render();
+        const key = { front: 'status_ordered_front', back: 'status_ordered_back', forward: 'status_ordered_forward', backward: 'status_ordered_backward' }[mode];
+        setStatus(t(key));
+      }
+
+      function handlesFromBBox(b) {
+        const left = b.minX * CELL - 8, top = b.minY * CELL - 8;
+        const right = (b.maxX + 1) * CELL + 8, bottom = (b.maxY + 1) * CELL + 8;
+        const cx = (left + right) / 2, cy = (top + bottom) / 2;
+        return {
+          left, top, right, bottom, cx, cy,
+          corners: {
+            nw: { x: left, y: top }, ne: { x: right, y: top },
+            sw: { x: left, y: bottom }, se: { x: right, y: bottom }
+          },
+          edges: {
+            n: { x: cx, y: top },    // Kante oben  -> nur Y skalieren
+            s: { x: cx, y: bottom }, // Kante unten -> nur Y skalieren
+            w: { x: left, y: cy },   // Kante links -> nur X skalieren
+            e: { x: right, y: cy }   // Kante rechts -> nur X skalieren
+          },
+          rotate: { x: cx, y: top - 28 }
+        };
+      }
+      function transformHandlesPx(path) { return handlesFromBBox(getPathBBox(path)); }
+
+      function applyTransformToPath(path, snapshot, fn) {
+        for (let i = 0; i < path.nodes.length; i++) {
+          path.nodes[i] = fn(snapshot.nodes[i]);
+        }
+        for (let i = 0; i < path.conns.length; i++) {
+          if (snapshot.conns[i].type === 'curve') {
+            path.conns[i].c1 = fn(snapshot.conns[i].c1);
+            path.conns[i].c2 = fn(snapshot.conns[i].c2);
+          }
+        }
+        if (path.closed && path.closingConn && snapshot.closingConn && snapshot.closingConn.type === 'curve') {
+          path.closingConn.c1 = fn(snapshot.closingConn.c1);
+          path.closingConn.c2 = fn(snapshot.closingConn.c2);
+        }
+      }
+
+      // Vereinheitlicht Einzel- und Mehrfachauswahl für Löschen/Dicke/Schließen
+      function activeSelectionIds() {
+        if ((tool === 'transform' || tool === 'perspective') && selectedIds.length) return selectedIds.slice();
+        return selectedId !== null ? [selectedId] : [];
+      }
+
+      // Rundet alle Punkte eines Pfads auf das Ganzzahl-Raster (Grid-Snap)
+      function snapPathToGrid(path) {
+        const r = p => pt(Math.round(p.x), Math.round(p.y));
+        path.nodes = path.nodes.map(r);
+        path.conns.forEach(c => { if (c.type === 'curve') { c.c1 = r(c.c1); c.c2 = r(c.c2); } });
+        if (path.closed && path.closingConn && path.closingConn.type === 'curve') {
+          path.closingConn.c1 = r(path.closingConn.c1);
+          path.closingConn.c2 = r(path.closingConn.c2);
+        }
+      }
+
+      // ---------- Perspektivisch-verzerren-Hilfen ----------
+      // Liefert die vier Eckpunkte (im Punktraum) des Rechtecks um eine BBox — Ausgangsform des Verzerrrahmens
+      function quadFromBBox(b) {
+        return {
+          nw: pt(b.minX, b.minY),
+          ne: pt(b.maxX + 1, b.minY),
+          se: pt(b.maxX + 1, b.maxY + 1),
+          sw: pt(b.minX, b.maxY + 1)
+        };
+      }
+      // Stellt sicher, dass für die aktuelle Auswahl ein Verzerrrahmen existiert (initialisiert ihn ggf. aus der BBox)
+      function ensurePerspQuad() {
+        if (!perspQuad && selectedIds.length) perspQuad = quadFromBBox(getGroupBBox(selectedIds));
+        return perspQuad;
+      }
+      function cloneQuad(q) { return { nw: pt(q.nw.x, q.nw.y), ne: pt(q.ne.x, q.ne.y), se: pt(q.se.x, q.se.y), sw: pt(q.sw.x, q.sw.y) }; }
+      // Punkt-in-Polygon-Test (Ray-Casting) — prüft, ob ein Punkt innerhalb des (evtl. verzerrten) Vierecks liegt
+      function pointInQuad(p, q) {
+        const pts = [q.nw, q.ne, q.se, q.sw];
+        let inside = false;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+          const xi = pts[i].x, yi = pts[i].y, xj = pts[j].x, yj = pts[j].y;
+          const intersect = ((yi > p.y) !== (yj > p.y)) && (p.x < (xj - xi) * (p.y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        return inside;
+      }
+      // Löst ein lineares Gleichungssystem A·x = b per Gauß-Elimination mit Spaltenpivotisierung
+      function solveLinearSystem(A, b) {
+        const n = A.length;
+        const M = A.map((row, i) => row.concat([b[i]]));
+        for (let col = 0; col < n; col++) {
+          let pivot = col;
+          for (let r = col + 1; r < n; r++) { if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r; }
+          [M[col], M[pivot]] = [M[pivot], M[col]];
+          const pv = M[col][col];
+          if (Math.abs(pv) < 1e-12) continue;
+          for (let r = 0; r < n; r++) {
+            if (r === col) continue;
+            const factor = M[r][col] / pv;
+            for (let c = col; c <= n; c++) M[r][c] -= factor * M[col][c];
+          }
+        }
+        return M.map((row, i) => row[i] === 0 ? 0 : row[n] / row[i]);
+      }
+      // Berechnet die 3x3-Homographie (perspektivische Abbildung), die vier Quellpunkte auf vier Zielpunkte abbildet
+      function computeHomography(src, dst) {
+        const A = [], b = [];
+        for (let i = 0; i < 4; i++) {
+          const { x, y } = src[i], X = dst[i].x, Y = dst[i].y;
+          A.push([x, y, 1, 0, 0, 0, -x * X, -y * X]); b.push(X);
+          A.push([0, 0, 0, x, y, 1, -x * Y, -y * Y]); b.push(Y);
+        }
+        const h = solveLinearSystem(A, b);
+        return { h11: h[0], h12: h[1], h13: h[2], h21: h[3], h22: h[4], h23: h[5], h31: h[6], h32: h[7] };
+      }
+      function applyHomography(H, p) {
+        const w = H.h31 * p.x + H.h32 * p.y + 1;
+        const denom = Math.abs(w) < 1e-9 ? (w < 0 ? -1e-9 : 1e-9) : w;
+        return pt((H.h11 * p.x + H.h12 * p.y + H.h13) / denom, (H.h21 * p.x + H.h22 * p.y + H.h23) / denom);
+      }
+
+      // ---------- Rendering ----------
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Hintergrundbild VOR dem Grid zeichnen
+        drawBackgroundImage();
+
+        ctx.strokeStyle = getVar('--grid-line');
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = 0; x <= COLS; x += 4) { ctx.moveTo(x * CELL + .5, 0); ctx.lineTo(x * CELL + .5, ROWS * CELL); }
+        for (let y = 0; y <= ROWS; y += 4) { ctx.moveTo(0, y * CELL + .5); ctx.lineTo(COLS * CELL, y * CELL + .5); }
+        ctx.stroke();
+
+        for (const path of paths) {
+          if (path.closed && path.fillEnabled) {
+            ctx.fillStyle = path.fillColor || defaultFillColor;
+            for (const c of fillCellsForPath(path)) ctx.fillRect(c.x * CELL, c.y * CELL, CELL, CELL);
+          }
+          const cells = stampThickness(rasterizePath(path), path.thickness);
+          const isSelected = (tool === 'transform' || tool === 'perspective') ? selectedIds.includes(path.id) : path.id === selectedId;
+          ctx.fillStyle = isSelected ? getVar('--select') : (path.color || defaultColor);
+          for (const c of cells) ctx.fillRect(c.x * CELL, c.y * CELL, CELL, CELL);
+        }
+        if (tool === 'select' && selectedConn) {
+          const path = paths.find(p => p.id === selectedConn.pathId);
+          if (path) {
+            ctx.fillStyle = '#ffffff';
+            for (const c of connCellSet(path, selectedConn.ref)) ctx.fillRect(c.x * CELL, c.y * CELL, CELL, CELL);
+          }
+        }
+
+        if (drawingPath) {
+          const cells = stampThickness(rasterizePath(drawingPath), drawingPath.thickness);
+          ctx.fillStyle = '#f4f6f8aa';
+          for (const c of cells) ctx.fillRect(c.x * CELL, c.y * CELL, CELL, CELL);
+          drawingPath.nodes.forEach((p, i) => {
+            ctx.fillStyle = i === drawingPath.nodes.length - 1 ? '#f2a65a' : '#f4f6f8';
+            ctx.beginPath();
+            ctx.arc(p.x * CELL + CELL / 2, p.y * CELL + CELL / 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+
+        if (tool === 'select') {
+          for (const path of paths) {
+            if (selectedId !== null && path.id !== selectedId) continue;
+            const allConns = path.conns.map((c, ci) => ({ c, p0: path.nodes[ci], p3: path.nodes[ci + 1] }));
+            if (path.closed && path.closingConn) {
+              allConns.push({ c: path.closingConn, p0: path.nodes[path.nodes.length - 1], p3: path.nodes[0] });
+            }
+            allConns.forEach(({ c, p0, p3 }) => {
+              if (c.type !== 'curve') return;
+              ctx.strokeStyle = '#f2a65a88';
+              ctx.setLineDash([3, 3]);
+              ctx.beginPath();
+              ctx.moveTo(p0.x * CELL + CELL / 2, p0.y * CELL + CELL / 2); ctx.lineTo(c.c1.x * CELL + CELL / 2, c.c1.y * CELL + CELL / 2);
+              ctx.moveTo(p3.x * CELL + CELL / 2, p3.y * CELL + CELL / 2); ctx.lineTo(c.c2.x * CELL + CELL / 2, c.c2.y * CELL + CELL / 2);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              [c.c1, c.c2].forEach(p => {
+                ctx.fillStyle = '#f2a65a'; ctx.strokeStyle = '#0a0d13'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(p.x * CELL + CELL / 2, p.y * CELL + CELL / 2, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+              });
+            });
+            path.nodes.forEach(p => {
+              ctx.fillStyle = '#f4f6f8'; ctx.strokeStyle = '#0a0d13'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.arc(p.x * CELL + CELL / 2, p.y * CELL + CELL / 2, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            });
+          }
+          // Verschmelz-Ziel hervorheben, während ein offener Endpunkt gezogen wird
+          if (editDrag && editDrag.kind === 'node') {
+            const dragPath = paths.find(p => p.id === editDrag.pathId);
+            if (dragPath && !dragPath.closed && (editDrag.nodeIndex === 0 || editDrag.nodeIndex === dragPath.nodes.length - 1)) {
+              const target = findMergeTarget(editDrag.pathId, editDrag.nodeIndex);
+              if (target) {
+                const tPath = paths.find(p => p.id === target.pathId);
+                const tp = tPath.nodes[target.nodeIndex];
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(tp.x * CELL + CELL / 2, tp.y * CELL + CELL / 2, 9, 0, Math.PI * 2);
+                ctx.stroke();
+              }
+            }
+          }
+        }
+
+        if (tool === 'transform' && selectedIds.length > 0) {
+          const b = getGroupBBox(selectedIds);
+          const h = handlesFromBBox(b);
+          const pv = activePivot(b);
+          const pvPx = { x: pv.x * CELL, y: pv.y * CELL };
+          ctx.strokeStyle = getVar('--select');
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(h.left, h.top, h.right - h.left, h.bottom - h.top);
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.moveTo(h.cx, h.top); ctx.lineTo(h.rotate.x, h.rotate.y);
+          ctx.stroke();
+
+          Object.values(h.corners).forEach(c => {
+            ctx.fillStyle = '#0a0d13'; ctx.strokeStyle = getVar('--select'); ctx.lineWidth = 1.5;
+            ctx.fillRect(c.x - 5, c.y - 5, 10, 10); ctx.strokeRect(c.x - 5, c.y - 5, 10, 10);
+          });
+          Object.values(h.edges).forEach(p => {
+            ctx.fillStyle = '#0a0d13'; ctx.strokeStyle = getVar('--select'); ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y - 6); ctx.lineTo(p.x + 6, p.y); ctx.lineTo(p.x, p.y + 6); ctx.lineTo(p.x - 6, p.y);
+            ctx.closePath(); ctx.fill(); ctx.stroke();
+          });
+          ctx.fillStyle = '#0a0d13'; ctx.strokeStyle = getVar('--select'); ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(h.rotate.x, h.rotate.y, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+          // Drehpunkt (Zielkreuz) — frei verschiebbar, weicht vom BBox-Mittelpunkt ab wenn versetzt
+          const pvColor = customPivot ? '#ffffff' : getVar('--select');
+          ctx.strokeStyle = pvColor; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(pvPx.x, pvPx.y, 7, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(pvPx.x - 10, pvPx.y); ctx.lineTo(pvPx.x - 3, pvPx.y);
+          ctx.moveTo(pvPx.x + 3, pvPx.y); ctx.lineTo(pvPx.x + 10, pvPx.y);
+          ctx.moveTo(pvPx.x, pvPx.y - 10); ctx.lineTo(pvPx.x, pvPx.y - 3);
+          ctx.moveTo(pvPx.x, pvPx.y + 3); ctx.lineTo(pvPx.x, pvPx.y + 10);
+          ctx.stroke();
+        }
+
+        if (tool === 'perspective' && selectedIds.length > 0) {
+          const q = ensurePerspQuad();
+          if (q) {
+            const corners = {};
+            ['nw', 'ne', 'se', 'sw'].forEach(k => { corners[k] = { x: q[k].x * CELL, y: q[k].y * CELL }; });
+            ctx.strokeStyle = getVar('--select');
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath();
+            ctx.moveTo(corners.nw.x, corners.nw.y);
+            ctx.lineTo(corners.ne.x, corners.ne.y);
+            ctx.lineTo(corners.se.x, corners.se.y);
+            ctx.lineTo(corners.sw.x, corners.sw.y);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.setLineDash([]);
+            Object.values(corners).forEach(c => {
+              ctx.fillStyle = '#0a0d13'; ctx.strokeStyle = getVar('--select'); ctx.lineWidth = 1.5;
+              ctx.fillRect(c.x - 5, c.y - 5, 10, 10); ctx.strokeRect(c.x - 5, c.y - 5, 10, 10);
+            });
+          }
+        }
+
+        if (marquee) {
+          const x0 = Math.min(marquee.startPx.x, marquee.curPx.x), x1 = Math.max(marquee.startPx.x, marquee.curPx.x);
+          const y0 = Math.min(marquee.startPx.y, marquee.curPx.y), y1 = Math.max(marquee.startPx.y, marquee.curPx.y);
+          ctx.fillStyle = 'rgba(110,231,194,0.10)';
+          ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+          ctx.strokeStyle = getVar('--accent');
+          ctx.setLineDash([4, 3]);
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+          ctx.setLineDash([]);
+        }
+      }
+
+      function getVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+      // ---------- UI-Sync ----------
+      function updateHistoryButtons() {
+        document.getElementById('btn-undo').disabled = historyIndex <= 0;
+        document.getElementById('btn-redo').disabled = historyIndex >= history.length - 1;
+      }
+      function updateToolButtons() {
+        document.getElementById('tool-line').classList.toggle('active', tool === 'line');
+        document.getElementById('tool-curve').classList.toggle('active', tool === 'curve');
+        document.getElementById('tool-select').classList.toggle('active', tool === 'select');
+        document.getElementById('tool-transform').classList.toggle('active', tool === 'transform');
+        document.getElementById('tool-perspective').classList.toggle('active', tool === 'perspective');
+        document.getElementById('tool-ellipse').classList.toggle('active', tool === 'ellipse');
+        document.getElementById('tool-rect').classList.toggle('active', tool === 'rect');
+        document.getElementById('tool-star').classList.toggle('active', tool === 'star');
+        canvas.classList.toggle('select-mode', tool === 'select');
+        canvas.classList.toggle('transform-mode', tool === 'transform');
+        canvas.classList.toggle('perspective-mode', tool === 'perspective');
+      }
+      function updateFinishButton() {
+        document.getElementById('btn-finish').disabled = !drawingPath || drawingPath.nodes.length < 2;
+      }
+      function updateThicknessUI() {
+        const slider = document.getElementById('thickness');
+        const label = document.getElementById('thickness-val');
+        const target = document.getElementById('thickness-target');
+        const ids = activeSelectionIds();
+        if (ids.length === 1) {
+          const path = paths.find(p => p.id === ids[0]);
+          if (path) { slider.value = path.thickness; label.textContent = path.thickness; target.textContent = t('target_selected'); return; }
+        }
+        if (ids.length > 1) {
+          const first = paths.find(p => p.id === ids[0]);
+          const v = first ? first.thickness : defaultThickness;
+          slider.value = v; label.textContent = v; target.textContent = t('target_multi', { n: ids.length });
+          return;
+        }
+        slider.value = defaultThickness; label.textContent = defaultThickness; target.textContent = t('target_new');
+      }
+      function updateColorUI() {
+        const strokeInput = document.getElementById('stroke-color');
+        const fillInput = document.getElementById('fill-color');
+        const fillCheck = document.getElementById('fill-enabled');
+        const target = document.getElementById('color-target');
+        const ids = activeSelectionIds();
+        let ref = null;
+        if (ids.length) {
+          ref = paths.find(p => p.id === ids[0]);
+          target.textContent = ids.length > 1 ? t('target_multi', { n: ids.length }) : t('target_selected');
+        } else {
+          target.textContent = t('target_new');
+        }
+        strokeInput.value = ref ? ref.color : defaultColor;
+        fillCheck.checked = ref ? !!ref.fillEnabled : defaultFillEnabled;
+        fillInput.value = ref ? (ref.fillColor || defaultFillColor) : defaultFillColor;
+      }
+      function updateCloseButton() {
+        const btn = document.getElementById('btn-close');
+        const ids = activeSelectionIds();
+        if (!ids.length) { btn.disabled = true; btn.textContent = t('close_btn_close'); return; }
+        btn.disabled = false;
+        if (ids.length === 1) {
+          const path = paths.find(p => p.id === ids[0]);
+          btn.textContent = path && path.closed ? t('close_btn_open') : t('close_btn_close');
+        } else {
+          btn.textContent = t('close_btn_multi');
+        }
+      }
+      function updateConnButton() {
+        const btn = document.getElementById('btn-toggle-conn');
+        if (!selectedConn) { btn.disabled = true; btn.textContent = t('conn_btn_default'); return; }
+        const path = paths.find(p => p.id === selectedConn.pathId);
+        const conn = path && getConn(path, selectedConn.ref);
+        if (!conn) { btn.disabled = true; btn.textContent = t('conn_btn_default'); return; }
+        btn.disabled = false;
+        btn.textContent = conn.type === 'line' ? t('conn_btn_to_curve') : t('conn_btn_to_line');
+      }
+      function updateDataView() {
+        const data = paths.map(p => ({ id: p.id, thickness: p.thickness, color: p.color, fillEnabled: p.fillEnabled, fillColor: p.fillColor, closed: p.closed, nodes: p.nodes, conns: p.conns, closingConn: p.closingConn }));
+        document.getElementById('data-view').value = JSON.stringify(data, null, 2);
+      }
+      function setStatus(text) { document.getElementById('status').innerHTML = text; }
+
+      // ---------- Sprache anwenden ----------
+      function applyI18n() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          el.innerHTML = t(el.getAttribute('data-i18n'));
+        });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+          el.title = t(el.getAttribute('data-i18n-title'));
+        });
+        document.documentElement.lang = lang;
+        updateThicknessUI();
+        updateColorUI();
+        updateCloseButton();
+        updateConnButton();
+        updateBgButtons();
+        updateStarPointsLabel();
+        setStatus(t('status_ready'));
+      }
+
+      // ---------- Events: Werkzeuge ----------
+      function switchTool(next) {
+        if (ellipseDrag) { ellipseDrag = null; drawingPath = null; }
+        else if (rectDrag) { rectDrag = null; drawingPath = null; }
+        else if (starDrag) { starDrag = null; drawingPath = null; }
+        else if (drawingPath) { finishDrawing(); }
+        tool = next; selectedId = null; selectedConn = null; selectedIds = []; marquee = null; editDrag = null; transformDrag = null; customPivot = null; perspQuad = null; perspDrag = null;
+        updateToolButtons(); updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+      }
+      document.getElementById('tool-line').addEventListener('click', () => { switchTool('line'); setStatus(t('tool_status_line')); });
+      document.getElementById('tool-curve').addEventListener('click', () => { switchTool('curve'); setStatus(t('tool_status_curve')); });
+      document.getElementById('tool-select').addEventListener('click', () => { switchTool('select'); setStatus(t('tool_status_select')); });
+      document.getElementById('tool-transform').addEventListener('click', () => { switchTool('transform'); setStatus(t('tool_status_transform')); });
+      document.getElementById('tool-perspective').addEventListener('click', () => { switchTool('perspective'); setStatus(t('tool_status_perspective')); });
+      document.getElementById('tool-ellipse').addEventListener('click', () => { switchTool('ellipse'); setStatus(t('tool_status_ellipse')); });
+      document.getElementById('tool-rect').addEventListener('click', () => { switchTool('rect'); setStatus(t('tool_status_rect')); });
+      document.getElementById('tool-star').addEventListener('click', () => { switchTool('star'); setStatus(t('tool_status_star')); });
+
+      // ---------- Stern/Zahnrad-Optionen ----------
+      function updateStarPointsLabel() {
+        document.getElementById('star-points-label').textContent = t(starShapeMode === 'gear' ? 'label_star_teeth' : 'label_star_points');
+      }
+      document.getElementById('star-mode-star').addEventListener('click', () => {
+        starShapeMode = 'star';
+        document.getElementById('star-mode-star').classList.add('active');
+        document.getElementById('star-mode-gear').classList.remove('active');
+        updateStarPointsLabel();
+      });
+      document.getElementById('star-mode-gear').addEventListener('click', () => {
+        starShapeMode = 'gear';
+        document.getElementById('star-mode-gear').classList.add('active');
+        document.getElementById('star-mode-star').classList.remove('active');
+        updateStarPointsLabel();
+      });
+      document.getElementById('star-points').addEventListener('input', (evt) => {
+        starPoints = parseInt(evt.target.value, 10);
+        document.getElementById('star-points-val').textContent = starPoints;
+      });
+      document.getElementById('star-depth').addEventListener('input', (evt) => {
+        starInnerRatio = parseInt(evt.target.value, 10) / 100;
+        document.getElementById('star-depth-val').textContent = evt.target.value + '%';
+      });
+
+      document.getElementById('btn-finish').addEventListener('click', finishDrawing);
+      document.getElementById('btn-undo').addEventListener('click', undo);
+      document.getElementById('btn-redo').addEventListener('click', redo);
+
+      document.getElementById('btn-toggle-conn').addEventListener('click', () => {
+        if (!selectedConn) return;
+        toggleConnType(selectedConn.pathId, selectedConn.ref);
+        updateConnButton();
+        pushHistory(); render();
+        setStatus(t('status_segment_converted'));
+      });
+      document.getElementById('btn-close').addEventListener('click', () => {
+        const ids = activeSelectionIds();
+        if (!ids.length) return;
+        let closedCount = 0, openedCount = 0, skipped = 0;
+        ids.forEach(id => {
+          const path = paths.find(p => p.id === id);
+          if (!path) return;
+          if (path.closed) {
+            path.closed = false; path.closingConn = null; openedCount++;
+          } else {
+            if (path.nodes.length < 3) { skipped++; return; }
+            const last = path.nodes[path.nodes.length - 1], first = path.nodes[0];
+            const useType = path.conns.length && path.conns[path.conns.length - 1].type === 'curve' ? 'curve' : 'line';
+            if (useType === 'curve') {
+              const cc = autoCurveControls(last, first);
+              path.closingConn = { type: 'curve', c1: cc.c1, c2: cc.c2 };
+            } else {
+              path.closingConn = { type: 'line' };
+            }
+            path.closed = true; closedCount++;
+          }
+        });
+        updateCloseButton();
+        pushHistory(); render();
+        if (ids.length === 1) {
+          setStatus(closedCount ? t('status_path_closed') : (openedCount ? t('status_path_opened') : t('status_close_need3')));
+        } else {
+          const skippedPart = skipped ? t('status_close_skipped_part', { n: skipped }) : '';
+          setStatus(t('status_close_multi', { closed: closedCount, opened: openedCount, skipped: skippedPart }));
+        }
+      });
+      document.getElementById('btn-delete').addEventListener('click', () => {
+        const ids = activeSelectionIds();
+        if (!ids.length) return;
+        paths = paths.filter(p => !ids.includes(p.id));
+        selectedId = null; selectedConn = null; selectedIds = []; customPivot = null;
+        pushHistory(); updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+        setStatus(ids.length > 1 ? t('status_paths_deleted_n', { n: ids.length }) : t('status_path_deleted'));
+      });
+      document.getElementById('btn-mirror-h').addEventListener('click', () => mirrorSelection('x'));
+      document.getElementById('btn-mirror-v').addEventListener('click', () => mirrorSelection('y'));
+      document.getElementById('btn-duplicate').addEventListener('click', duplicateSelection);
+      document.getElementById('btn-order-front').addEventListener('click', () => reorderSelection('front'));
+      document.getElementById('btn-order-back').addEventListener('click', () => reorderSelection('back'));
+      document.getElementById('btn-order-forward').addEventListener('click', () => reorderSelection('forward'));
+      document.getElementById('btn-order-backward').addEventListener('click', () => reorderSelection('backward'));
+      document.getElementById('btn-clear').addEventListener('click', () => {
+        if (!paths.length) return;
+        if (!confirm(t('confirm_clear_all'))) return;
+        paths = []; selectedId = null; selectedConn = null; selectedIds = []; customPivot = null;
+        pushHistory(); updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+        setStatus(t('status_all_deleted'));
+      });
+
+      const thicknessSlider = document.getElementById('thickness');
+      thicknessSlider.addEventListener('input', () => {
+        const v = parseInt(thicknessSlider.value, 10);
+        document.getElementById('thickness-val').textContent = v;
+        const ids = activeSelectionIds();
+        if (ids.length) {
+          ids.forEach(id => { const path = paths.find(p => p.id === id); if (path) path.thickness = v; });
+          render();
+        } else { defaultThickness = v; }
+      });
+      thicknessSlider.addEventListener('change', () => { if (activeSelectionIds().length) pushHistory(); });
+
+      const strokeColorInput = document.getElementById('stroke-color');
+      const fillColorInput = document.getElementById('fill-color');
+      const fillEnabledInput = document.getElementById('fill-enabled');
+
+      strokeColorInput.addEventListener('input', () => {
+        const v = strokeColorInput.value;
+        const ids = activeSelectionIds();
+        if (ids.length) {
+          ids.forEach(id => { const path = paths.find(p => p.id === id); if (path) path.color = v; });
+          render();
+        } else { defaultColor = v; }
+      });
+      strokeColorInput.addEventListener('change', () => { if (activeSelectionIds().length) pushHistory(); });
+
+      fillColorInput.addEventListener('input', () => {
+        const v = fillColorInput.value;
+        const ids = activeSelectionIds();
+        if (ids.length) {
+          ids.forEach(id => {
+            const path = paths.find(p => p.id === id);
+            if (path) { path.fillColor = v; path.fillEnabled = true; }
+          });
+          fillEnabledInput.checked = true;
+          render();
+        } else {
+          defaultFillColor = v;
+          defaultFillEnabled = true;
+          fillEnabledInput.checked = true;
+        }
+      });
+      fillColorInput.addEventListener('change', () => { if (activeSelectionIds().length) pushHistory(); });
+
+      fillEnabledInput.addEventListener('change', () => {
+        const on = fillEnabledInput.checked;
+        const ids = activeSelectionIds();
+        if (ids.length) {
+          ids.forEach(id => { const path = paths.find(p => p.id === id); if (path) path.fillEnabled = on; });
+          pushHistory();
+        } else { defaultFillEnabled = on; }
+        render();
+      });
+
+      document.getElementById('btn-save').addEventListener('click', () => {
+        saveToStore('paths', clonePaths());
+        // Hintergrundbild-Daten als base64 im memoryStore persistieren
+        saveToStore('bgImage', bgImage ? bgImage.src : null);
+        saveToStore('bgImageVisible', bgImageVisible);
+        saveToStore('bgOpacity', bgOpacity);
+        setStatus(t('status_saved_memory', { n: paths.length }));
+      });
+      document.getElementById('btn-load').addEventListener('click', () => {
+        const data = loadFromStore('paths');
+        if (!data) { setStatus(t('status_no_saved')); return; }
+        paths = JSON.parse(JSON.stringify(data));
+        paths.forEach(p => {
+          if (p.color === undefined) p.color = defaultColor;
+          if (p.fillEnabled === undefined) p.fillEnabled = false;
+          if (p.fillColor === undefined) p.fillColor = defaultFillColor;
+        });
+        nextId = 1 + paths.reduce((m, p) => Math.max(m, p.id), 0);
+        selectedId = null; selectedConn = null;
+
+        // Hintergrundbild wiederherstellen
+        const bgSrc = loadFromStore('bgImage');
+        if (bgSrc) {
+          const img = new Image();
+          img.onload = function () {
+            bgImage = img;
+            bgImageVisible = loadFromStore('bgImageVisible') !== false;
+            bgOpacity = loadFromStore('bgOpacity') || 0.5;
+            document.getElementById('bg-opacity').value = Math.round(bgOpacity * 100);
+            document.getElementById('bg-opacity-val').textContent = Math.round(bgOpacity * 100) + '%';
+            updateBgButtons();
+            render();
+          };
+          img.src = bgSrc;
+        } else {
+          bgImage = null;
+          bgImageVisible = true;
+          bgOpacity = 0.5;
+          updateBgButtons();
+        }
+
+        pushHistory(); render();
+        setStatus(t('status_loaded', { n: paths.length }));
+      });
+      document.getElementById('btn-export').addEventListener('click', () => {
+        const data = { cols: COLS, rows: ROWS, paths };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'pfade.json'; a.click();
+        URL.revokeObjectURL(url);
+        setStatus(t('status_exported'));
+      });
+      document.getElementById('btn-import').addEventListener('click', () => {
+        document.getElementById('import-file-input').click();
+      });
+      document.getElementById('import-file-input').addEventListener('change', (evt) => {
+        const file = evt.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            if (!data || !Array.isArray(data.paths)) throw new Error('Ungültiges Format');
+            if (paths.length && !confirm(t('confirm_replace_import'))) {
+              evt.target.value = '';
+              return;
+            }
+            paths = JSON.parse(JSON.stringify(data.paths));
+            paths.forEach(p => {
+              if (p.nodes === undefined) p.nodes = [];
+              if (p.conns === undefined) p.conns = [];
+              if (p.thickness === undefined) p.thickness = defaultThickness;
+              if (p.color === undefined) p.color = defaultColor;
+              if (p.fillEnabled === undefined) p.fillEnabled = false;
+              if (p.fillColor === undefined) p.fillColor = defaultFillColor;
+              if (p.closed === undefined) p.closed = false;
+              if (p.closingConn === undefined) p.closingConn = null;
+            });
+            nextId = 1 + paths.reduce((m, p) => Math.max(m, p.id || 0), 0);
+            selectedId = null; selectedConn = null; selectedIds = []; customPivot = null;
+            pushHistory(); updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+            setStatus(t('status_imported', { name: file.name, n: paths.length }));
+          } catch (err) {
+            setStatus(t('status_import_failed'));
+          }
+          evt.target.value = '';
+        };
+        reader.readAsText(file);
+      });
+
+      // ---------- Events: Hintergrundbild ----------
+      document.getElementById('btn-bg-select').addEventListener('click', () => {
+        document.getElementById('bg-file-input').click();
+      });
+      document.getElementById('bg-file-input').addEventListener('change', (evt) => {
+        const file = evt.target.files[0];
+        if (file) loadBgImage(file);
+        evt.target.value = ''; // Reset für erneute Auswahl desselben Bildes
+      });
+      document.getElementById('btn-bg-toggle').addEventListener('click', toggleBgImage);
+      document.getElementById('btn-bg-remove').addEventListener('click', removeBgImage);
+
+      const bgOpacitySlider = document.getElementById('bg-opacity');
+      bgOpacitySlider.addEventListener('input', () => {
+        const val = parseInt(bgOpacitySlider.value, 10);
+        bgOpacity = val / 100;
+        document.getElementById('bg-opacity-val').textContent = val + '%';
+        render();
+      });
+
+      // ---------- Events: Zeichnen ----------
+      canvas.addEventListener('click', (evt) => {
+        if (tool !== 'line' && tool !== 'curve') return;
+        if (editDrag || transformDrag) return;
+        const cell = eventToCell(evt);
+        if (!drawingPath) { startDrawing(cell); }
+        else { addDrawPoint(cell); }
+        updateFinishButton();
+        render();
+      });
+      canvas.addEventListener('dblclick', (evt) => {
+        if (tool === 'transform' && selectedIds.length) {
+          const p = relPixel(evt);
+          const bbox = getGroupBBox(selectedIds);
+          const pivot = activePivot(bbox);
+          const pivotPx = { x: pivot.x * CELL, y: pivot.y * CELL };
+          if (Math.hypot(p.x - pivotPx.x, p.y - pivotPx.y) <= 9) {
+            evt.preventDefault();
+            customPivot = null;
+            render();
+            setStatus(t('status_pivot_reset'));
+            return;
+          }
+        }
+        if (tool === 'select') {
+          evt.preventDefault();
+          const p = relPixel(evt);
+          const point = pixelToPoint(p.x, p.y);
+          if (hitTestHandle(point, 1.0)) return; // auf einem Punkt -> nichts einfügen
+          const cell = eventToCell(evt);
+          const found = hitTestConn(cell);
+          if (found) {
+            const path = paths.find(x => x.id === found.pathId);
+            if (path) {
+              insertNodeOnConn(path, found.ref, point);
+              selectedId = path.id; selectedConn = null;
+              updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton();
+              pushHistory(); render();
+              setStatus(t('status_point_inserted'));
+            }
+          }
+          return;
+        }
+        if (tool !== 'line' && tool !== 'curve') return;
+        if (!drawingPath) return;
+        evt.preventDefault();
+        // der vorangehende zweite click hat bereits einen (fast) doppelten Punkt gesetzt
+        if (drawingPath.nodes.length > 2) {
+          drawingPath.nodes.pop();
+          drawingPath.conns.pop();
+        }
+        finishDrawing();
+      });
+
+      // ---------- Events: Bearbeiten ----------
+      canvas.addEventListener('mousedown', (evt) => {
+        if (tool === 'ellipse') {
+          const cell = eventToCell(evt);
+          ellipseDrag = { start: cell };
+          drawingPath = buildEllipsePath(cell, cell);
+          render();
+          return;
+        }
+        if (tool === 'rect') {
+          const cell = eventToCell(evt);
+          rectDrag = { start: cell };
+          drawingPath = buildRectPath(cell, cell);
+          render();
+          return;
+        }
+        if (tool === 'star') {
+          const cell = eventToCell(evt);
+          starDrag = { start: cell };
+          drawingPath = buildStarShapePath(cell, cell);
+          render();
+          return;
+        }
+        if (tool === 'select') {
+          const p = relPixel(evt);
+          const point = pixelToPoint(p.x, p.y);
+          const handle = hitTestHandle(point, 1.0);
+          if (handle) {
+            editDrag = handle;
+            selectedId = handle.pathId;
+            selectedConn = null;
+            updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+            return;
+          }
+          const cell = eventToCell(evt);
+          const found = hitTestConn(cell);
+          if (found) {
+            selectedId = found.pathId;
+            selectedConn = found;
+          } else {
+            // Kein Treffer auf der Kontur -> in gefüllter Fläche suchen (Pfad, aber kein bestimmtes Segment)
+            const fillHit = hitTestFilledPath(cell);
+            selectedId = fillHit ? fillHit.id : null;
+            selectedConn = null;
+          }
+          updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+          return;
+        }
+        if (tool === 'transform') {
+          const p = relPixel(evt);
+          const near = (a, b, r) => Math.hypot(a.x - b.x, a.y - b.y) <= r;
+
+          if (selectedIds.length) {
+            const bbox = getGroupBBox(selectedIds);
+            const h = handlesFromBBox(bbox);
+            const pivot = activePivot(bbox);
+            const pivotPx = { x: pivot.x * CELL, y: pivot.y * CELL };
+            const buildSnapshots = () => {
+              const snaps = {};
+              selectedIds.forEach(id => {
+                const path = paths.find(x => x.id === id);
+                if (path) snaps[id] = JSON.parse(JSON.stringify({ nodes: path.nodes, conns: path.conns, closingConn: path.closingConn }));
+              });
+              return snaps;
+            };
+            if (near(p, pivotPx, 9)) {
+              transformDrag = { kind: 'pivot' };
+              return;
+            }
+            if (near(p, h.rotate, 9)) {
+              const start = pixelToPoint(p.x, p.y);
+              transformDrag = { kind: 'rotate', pivot, snapshots: buildSnapshots(), startAngle: Math.atan2(start.y - pivot.y, start.x - pivot.x) };
+              return;
+            }
+            for (const key of Object.keys(h.corners)) {
+              if (near(p, h.corners[key], 9)) {
+                const start = pixelToPoint(p.x, p.y);
+                transformDrag = { kind: 'scale', pivot, snapshots: buildSnapshots(), startDist: Math.max(0.15, Math.hypot(start.x - pivot.x, start.y - pivot.y)) };
+                return;
+              }
+            }
+            if (near(p, h.edges.w, 9) || near(p, h.edges.e, 9)) {
+              const start = pixelToPoint(p.x, p.y);
+              transformDrag = { kind: 'scaleX', pivot, snapshots: buildSnapshots(), startDist: Math.max(0.15, Math.abs(start.x - pivot.x)) };
+              return;
+            }
+            if (near(p, h.edges.n, 9) || near(p, h.edges.s, 9)) {
+              const start = pixelToPoint(p.x, p.y);
+              transformDrag = { kind: 'scaleY', pivot, snapshots: buildSnapshots(), startDist: Math.max(0.15, Math.abs(start.y - pivot.y)) };
+              return;
+            }
+            if (p.x >= h.left && p.x <= h.right && p.y >= h.top && p.y <= h.bottom) {
+              const start = pixelToPoint(p.x, p.y);
+              transformDrag = { kind: 'move', pivot, snapshots: buildSnapshots(), startPoint: start };
+              return;
+            }
+          }
+
+          const cell = eventToCell(evt);
+          const found = hitTestPath(cell);
+          if (found) {
+            if (evt.shiftKey) {
+              if (selectedIds.includes(found.id)) selectedIds = selectedIds.filter(id => id !== found.id);
+              else selectedIds.push(found.id);
+            } else if (!(selectedIds.includes(found.id) && selectedIds.length > 1)) {
+              selectedIds = [found.id];
+            }
+            selectedId = selectedIds.length ? selectedIds[selectedIds.length - 1] : null;
+            selectedConn = null;
+            customPivot = null;
+            updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+            return;
+          }
+          // Leerer Bereich: Auswahlrechteck (Marquee) aufziehen
+          marquee = { startPx: p, curPx: p, additive: evt.shiftKey };
+        }
+        if (tool === 'perspective') {
+          const p = relPixel(evt);
+          const near = (a, b, r) => Math.hypot(a.x - b.x, a.y - b.y) <= r;
+
+          if (selectedIds.length) {
+            const q = ensurePerspQuad();
+            const buildSnapshots = () => {
+              const snaps = {};
+              selectedIds.forEach(id => {
+                const path = paths.find(x => x.id === id);
+                if (path) snaps[id] = JSON.parse(JSON.stringify({ nodes: path.nodes, conns: path.conns, closingConn: path.closingConn }));
+              });
+              return snaps;
+            };
+            for (const key of ['nw', 'ne', 'se', 'sw']) {
+              const cpx = { x: q[key].x * CELL, y: q[key].y * CELL };
+              if (near(p, cpx, 9)) {
+                perspDrag = { kind: 'corner', corner: key, srcQuad: cloneQuad(q), snapshots: buildSnapshots() };
+                return;
+              }
+            }
+            const cur = pixelToPoint(p.x, p.y);
+            if (pointInQuad(cur, q)) {
+              perspDrag = { kind: 'move', srcQuad: cloneQuad(q), snapshots: buildSnapshots(), startPoint: cur };
+              return;
+            }
+          }
+
+          const cell = eventToCell(evt);
+          const found = hitTestPath(cell);
+          if (found) {
+            if (evt.shiftKey) {
+              if (selectedIds.includes(found.id)) selectedIds = selectedIds.filter(id => id !== found.id);
+              else selectedIds.push(found.id);
+            } else if (!(selectedIds.includes(found.id) && selectedIds.length > 1)) {
+              selectedIds = [found.id];
+            }
+            selectedId = selectedIds.length ? selectedIds[selectedIds.length - 1] : null;
+            selectedConn = null;
+            perspQuad = null;
+            updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+            return;
+          }
+          // Leerer Bereich: Auswahlrechteck (Marquee) aufziehen
+          marquee = { startPx: p, curPx: p, additive: evt.shiftKey };
+        }
+      });
+
+      canvas.addEventListener('mousemove', (evt) => {
+        if (ellipseDrag) {
+          const cell = eventToCell(evt);
+          let end = cell;
+          if (evt.shiftKey) {
+            const dx = cell.x - ellipseDrag.start.x, dy = cell.y - ellipseDrag.start.y;
+            const m = Math.max(Math.abs(dx), Math.abs(dy));
+            const sx = dx < 0 ? -1 : 1, sy = dy < 0 ? -1 : 1;
+            end = { x: ellipseDrag.start.x + sx * m, y: ellipseDrag.start.y + sy * m };
+          }
+          drawingPath = buildEllipsePath(ellipseDrag.start, end);
+          render();
+          return;
+        }
+        if (rectDrag) {
+          const cell = eventToCell(evt);
+          let end = cell;
+          if (evt.shiftKey) {
+            const dx = cell.x - rectDrag.start.x, dy = cell.y - rectDrag.start.y;
+            const m = Math.max(Math.abs(dx), Math.abs(dy));
+            const sx = dx < 0 ? -1 : 1, sy = dy < 0 ? -1 : 1;
+            end = { x: rectDrag.start.x + sx * m, y: rectDrag.start.y + sy * m };
+          }
+          drawingPath = buildRectPath(rectDrag.start, end);
+          render();
+          return;
+        }
+        if (starDrag) {
+          const cell = eventToCell(evt);
+          let end = cell;
+          if (evt.shiftKey) {
+            const dx = cell.x - starDrag.start.x, dy = cell.y - starDrag.start.y;
+            const m = Math.max(Math.abs(dx), Math.abs(dy));
+            const sx = dx < 0 ? -1 : 1, sy = dy < 0 ? -1 : 1;
+            end = { x: starDrag.start.x + sx * m, y: starDrag.start.y + sy * m };
+          }
+          drawingPath = buildStarShapePath(starDrag.start, end);
+          render();
+          return;
+        }
+        if (editDrag) {
+          const cell = eventToCell(evt);
+          const path = paths.find(p => p.id === editDrag.pathId);
+          if (!path) return;
+          if (editDrag.kind === 'node') {
+            const old = path.nodes[editDrag.nodeIndex];
+            const dx = cell.x - old.x, dy = cell.y - old.y;
+            path.nodes[editDrag.nodeIndex] = pt(cell.x, cell.y);
+            if (editDrag.nodeIndex > 0) {
+              const c = path.conns[editDrag.nodeIndex - 1];
+              if (c.type === 'curve') { c.c2 = pt(c.c2.x + dx, c.c2.y + dy); }
+            }
+            if (editDrag.nodeIndex < path.conns.length) {
+              const c = path.conns[editDrag.nodeIndex];
+              if (c.type === 'curve') { c.c1 = pt(c.c1.x + dx, c.c1.y + dy); }
+            }
+            if (path.closed && path.closingConn && path.closingConn.type === 'curve') {
+              if (editDrag.nodeIndex === 0) {
+                path.closingConn.c2 = pt(path.closingConn.c2.x + dx, path.closingConn.c2.y + dy);
+              }
+              if (editDrag.nodeIndex === path.nodes.length - 1) {
+                path.closingConn.c1 = pt(path.closingConn.c1.x + dx, path.closingConn.c1.y + dy);
+              }
+            }
+          } else if (editDrag.kind === 'c1') {
+            path.conns[editDrag.connIndex].c1 = pt(cell.x, cell.y);
+          } else if (editDrag.kind === 'c2') {
+            path.conns[editDrag.connIndex].c2 = pt(cell.x, cell.y);
+          } else if (editDrag.kind === 'closeC1') {
+            path.closingConn.c1 = pt(cell.x, cell.y);
+          } else if (editDrag.kind === 'closeC2') {
+            path.closingConn.c2 = pt(cell.x, cell.y);
+          }
+          render();
+          return;
+        }
+        if (marquee) {
+          marquee.curPx = relPixel(evt);
+          render();
+          return;
+        }
+        if (transformDrag) {
+          const p = relPixel(evt);
+          const cur = pixelToPoint(p.x, p.y);
+          if (transformDrag.kind === 'pivot') {
+            customPivot = cur;
+            render();
+            return;
+          }
+          const pv = transformDrag.pivot;
+          let fn;
+          if (transformDrag.kind === 'move') {
+            const dx = cur.x - transformDrag.startPoint.x, dy = cur.y - transformDrag.startPoint.y;
+            fn = sp => pt(sp.x + dx, sp.y + dy);
+          } else if (transformDrag.kind === 'rotate') {
+            const angle = Math.atan2(cur.y - pv.y, cur.x - pv.x);
+            const delta = angle - transformDrag.startAngle;
+            const cos = Math.cos(delta), sin = Math.sin(delta);
+            fn = sp => pt(pv.x + (sp.x - pv.x) * cos - (sp.y - pv.y) * sin, pv.y + (sp.x - pv.x) * sin + (sp.y - pv.y) * cos);
+          } else if (transformDrag.kind === 'scale') {
+            const dist = Math.max(0.15, Math.hypot(cur.x - pv.x, cur.y - pv.y));
+            const factor = Math.max(0.05, Math.min(20, dist / transformDrag.startDist));
+            fn = sp => pt(pv.x + (sp.x - pv.x) * factor, pv.y + (sp.y - pv.y) * factor);
+          } else if (transformDrag.kind === 'scaleX') {
+            const dist = Math.max(0.15, Math.abs(cur.x - pv.x));
+            const factor = Math.max(0.05, Math.min(20, dist / transformDrag.startDist));
+            fn = sp => pt(pv.x + (sp.x - pv.x) * factor, sp.y);
+          } else if (transformDrag.kind === 'scaleY') {
+            const dist = Math.max(0.15, Math.abs(cur.y - pv.y));
+            const factor = Math.max(0.05, Math.min(20, dist / transformDrag.startDist));
+            fn = sp => pt(sp.x, pv.y + (sp.y - pv.y) * factor);
+          }
+          if (fn) {
+            Object.keys(transformDrag.snapshots).forEach(id => {
+              const path = paths.find(x => x.id === Number(id) || x.id === id);
+              if (path) applyTransformToPath(path, transformDrag.snapshots[id], fn);
+            });
+          }
+          render();
+        }
+        if (perspDrag) {
+          const p = relPixel(evt);
+          const cur = pixelToPoint(p.x, p.y);
+          let dstQuad;
+          if (perspDrag.kind === 'move') {
+            const dx = cur.x - perspDrag.startPoint.x, dy = cur.y - perspDrag.startPoint.y;
+            dstQuad = {
+              nw: pt(perspDrag.srcQuad.nw.x + dx, perspDrag.srcQuad.nw.y + dy),
+              ne: pt(perspDrag.srcQuad.ne.x + dx, perspDrag.srcQuad.ne.y + dy),
+              se: pt(perspDrag.srcQuad.se.x + dx, perspDrag.srcQuad.se.y + dy),
+              sw: pt(perspDrag.srcQuad.sw.x + dx, perspDrag.srcQuad.sw.y + dy)
+            };
+          } else {
+            dstQuad = cloneQuad(perspDrag.srcQuad);
+            dstQuad[perspDrag.corner] = cur;
+          }
+          const srcArr = ['nw', 'ne', 'se', 'sw'].map(k => perspDrag.srcQuad[k]);
+          const dstArr = ['nw', 'ne', 'se', 'sw'].map(k => dstQuad[k]);
+          const H = computeHomography(srcArr, dstArr);
+          Object.keys(perspDrag.snapshots).forEach(id => {
+            const path = paths.find(x => x.id === Number(id) || x.id === id);
+            if (path) applyTransformToPath(path, perspDrag.snapshots[id], sp => applyHomography(H, sp));
+          });
+          perspQuad = dstQuad;
+          render();
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (ellipseDrag) {
+          ellipseDrag = null;
+          if (drawingPath) {
+            const w = Math.abs(drawingPath.nodes[1].x - drawingPath.nodes[3].x);
+            const h = Math.abs(drawingPath.nodes[2].y - drawingPath.nodes[0].y);
+            if (w < 1 || h < 1) {
+              drawingPath = null; render();
+              setStatus(t('status_ellipse_too_small'));
+            } else {
+              finishDrawing();
+            }
+          }
+        }
+        if (rectDrag) {
+          rectDrag = null;
+          if (drawingPath) {
+            const w = Math.abs(drawingPath.nodes[1].x - drawingPath.nodes[0].x);
+            const h = Math.abs(drawingPath.nodes[3].y - drawingPath.nodes[0].y);
+            if (w < 1 || h < 1) {
+              drawingPath = null; render();
+              setStatus(t('status_rect_too_small'));
+            } else {
+              finishDrawing();
+            }
+          }
+        }
+        if (starDrag) {
+          starDrag = null;
+          if (drawingPath) {
+            const xs = drawingPath.nodes.map(p => p.x), ys = drawingPath.nodes.map(p => p.y);
+            const w = Math.max(...xs) - Math.min(...xs);
+            const h = Math.max(...ys) - Math.min(...ys);
+            if (w < 1 || h < 1) {
+              drawingPath = null; render();
+              setStatus(t('status_star_too_small'));
+            } else {
+              finishDrawing();
+            }
+          }
+        }
+        if (editDrag) {
+          if (editDrag.kind === 'node') {
+            const path = paths.find(p => p.id === editDrag.pathId);
+            if (path && !path.closed && (editDrag.nodeIndex === 0 || editDrag.nodeIndex === path.nodes.length - 1)) {
+              const target = findMergeTarget(editDrag.pathId, editDrag.nodeIndex);
+              if (target) {
+                const wasSamePath = target.pathId === editDrag.pathId;
+                mergeEndpoints(editDrag.pathId, editDrag.nodeIndex, target.pathId, target.nodeIndex);
+                selectedId = null; selectedConn = null; selectedIds = []; customPivot = null;
+                updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton();
+                setStatus(wasSamePath ? t('status_merged_close') : t('status_merged_join'));
+              }
+            }
+          }
+          editDrag = null;
+          pushHistory();
+          render();
+        }
+        if (transformDrag) {
+          if (transformDrag.kind === 'pivot') {
+            if (customPivot) { customPivot = pt(Math.round(customPivot.x), Math.round(customPivot.y)); }
+            transformDrag = null;
+            render();
+          } else {
+            Object.keys(transformDrag.snapshots).forEach(id => {
+              const path = paths.find(x => x.id === Number(id) || x.id === id);
+              if (path) snapPathToGrid(path);
+            });
+            transformDrag = null;
+            render();
+            pushHistory();
+          }
+        }
+        if (perspDrag) {
+          Object.keys(perspDrag.snapshots).forEach(id => {
+            const path = paths.find(x => x.id === Number(id) || x.id === id);
+            if (path) snapPathToGrid(path);
+          });
+          perspDrag = null;
+          render();
+          pushHistory();
+        }
+        if (marquee) {
+          const distMoved = Math.hypot(marquee.curPx.x - marquee.startPx.x, marquee.curPx.y - marquee.startPx.y);
+          if (distMoved < 4) {
+            if (!marquee.additive) { selectedIds = []; selectedId = null; customPivot = null; perspQuad = null; }
+          } else {
+            customPivot = null; perspQuad = null;
+            const x0 = Math.min(marquee.startPx.x, marquee.curPx.x) / CELL, x1 = Math.max(marquee.startPx.x, marquee.curPx.x) / CELL;
+            const y0 = Math.min(marquee.startPx.y, marquee.curPx.y) / CELL, y1 = Math.max(marquee.startPx.y, marquee.curPx.y) / CELL;
+            const hitIds = paths.filter(pp => {
+              const b = getPathBBox(pp);
+              return !(b.maxX + 1 < x0 || b.minX > x1 || b.maxY + 1 < y0 || b.minY > y1);
+            }).map(pp => pp.id);
+            if (marquee.additive) {
+              hitIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
+            } else {
+              selectedIds = hitIds;
+            }
+            selectedId = selectedIds.length ? selectedIds[selectedIds.length - 1] : null;
+          }
+          marquee = null;
+          updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton(); render();
+        }
+      });
+
+      canvas.addEventListener('contextmenu', (evt) => {
+        if (tool !== 'select') return;
+        evt.preventDefault();
+        const p = relPixel(evt);
+        const point = pixelToPoint(p.x, p.y);
+        const handle = hitTestHandle(point, 1.0);
+        if (handle && handle.kind === 'node') {
+          const path = paths.find(x => x.id === handle.pathId);
+          if (path && removeNode(path, handle.nodeIndex)) {
+            pushHistory(); render();
+            setStatus(t('status_node_removed'));
+          } else {
+            setStatus(t('status_node_min2'));
+          }
+        }
+      });
+
+      // ---------- Tastatur ----------
+      window.addEventListener('keydown', (evt) => {
+        if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 'z') {
+          evt.preventDefault();
+          if (evt.shiftKey) redo(); else undo();
+          return;
+        }
+        if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 'y') { evt.preventDefault(); redo(); return; }
+        if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 'd') {
+          if (activeSelectionIds().length && (tool === 'select' || tool === 'transform' || tool === 'perspective')) {
+            evt.preventDefault();
+            duplicateSelection();
+          }
+          return;
+        }
+        if ((evt.ctrlKey || evt.metaKey) && (evt.key === ']' || evt.key === '[')) {
+          if (activeSelectionIds().length && (tool === 'select' || tool === 'transform' || tool === 'perspective')) {
+            evt.preventDefault();
+            if (evt.key === ']') reorderSelection(evt.shiftKey ? 'front' : 'forward');
+            else reorderSelection(evt.shiftKey ? 'back' : 'backward');
+          }
+          return;
+        }
+        if (evt.key === 'Enter') {
+          if (drawingPath) finishDrawing();
+          return;
+        }
+        if (evt.key === 'Escape') {
+          if (drawingPath) cancelDrawing();
+          else if ((tool === 'transform' || tool === 'perspective') && selectedIds.length) { selectedIds = []; selectedId = null; customPivot = null; perspQuad = null; updateThicknessUI(); updateColorUI(); updateCloseButton(); render(); }
+          return;
+        }
+        if (evt.key === 'Delete' || evt.key === 'Backspace') {
+          if (activeSelectionIds().length && (tool === 'select' || tool === 'transform' || tool === 'perspective')) {
+            evt.preventDefault();
+            document.getElementById('btn-delete').click();
+          }
+        }
+      });
+
+      document.getElementById('lang-select').addEventListener('change', (evt) => {
+        lang = evt.target.value;
+        applyI18n();
+      });
+
+      // ---------- Start ----------
+      document.getElementById('lang-select').value = lang;
+      updateToolButtons();
+      updateThicknessUI(); updateColorUI(); updateCloseButton(); updateConnButton();
+      updateFinishButton();
+      updateBgButtons();
+      applyI18n();
+      pushHistory();
+      render();
+    })();
+  </script>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496"
+    integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ=="
+    data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}'
+    crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,1535 @@
+{
+  "cols": 92,
+  "rows": 60,
+  "paths": [
+    {
+      "id": 6,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 42,
+          "y": 15
+        },
+        {
+          "x": 48,
+          "y": 20
+        },
+        {
+          "x": 42,
+          "y": 25
+        },
+        {
+          "x": 36,
+          "y": 20
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 45.3137084988,
+            "y": 15
+          },
+          "c2": {
+            "x": 48,
+            "y": 17.238576251
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 48,
+            "y": 22.761423749
+          },
+          "c2": {
+            "x": 45.3137084988,
+            "y": 25
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 38.6862915012,
+            "y": 25
+          },
+          "c2": {
+            "x": 36,
+            "y": 22.761423749
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 36,
+          "y": 17.238576251
+        },
+        "c2": {
+          "x": 38.6862915012,
+          "y": 15
+        }
+      }
+    },
+    {
+      "id": 7,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 55,
+          "y": 15
+        },
+        {
+          "x": 62,
+          "y": 20
+        },
+        {
+          "x": 55,
+          "y": 25
+        },
+        {
+          "x": 49,
+          "y": 20
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 59,
+            "y": 15
+          },
+          "c2": {
+            "x": 62,
+            "y": 18
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 62,
+            "y": 23
+          },
+          "c2": {
+            "x": 59,
+            "y": 25
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 52,
+            "y": 25
+          },
+          "c2": {
+            "x": 49,
+            "y": 23
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 49,
+          "y": 18
+        },
+        "c2": {
+          "x": 52,
+          "y": 15
+        }
+      }
+    },
+    {
+      "id": 8,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 42,
+          "y": 15
+        },
+        {
+          "x": 43,
+          "y": 20
+        },
+        {
+          "x": 42,
+          "y": 25
+        },
+        {
+          "x": 41,
+          "y": 20
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 42.5522847498,
+            "y": 15
+          },
+          "c2": {
+            "x": 43,
+            "y": 17.238576251
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 43,
+            "y": 22.761423749
+          },
+          "c2": {
+            "x": 42.5522847498,
+            "y": 25
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 41.4477152502,
+            "y": 25
+          },
+          "c2": {
+            "x": 41,
+            "y": 22.761423749
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 41,
+          "y": 17.238576251
+        },
+        "c2": {
+          "x": 41.4477152502,
+          "y": 15
+        }
+      }
+    },
+    {
+      "id": 9,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 54,
+          "y": 16
+        },
+        {
+          "x": 55,
+          "y": 20.5
+        },
+        {
+          "x": 54,
+          "y": 25
+        },
+        {
+          "x": 53,
+          "y": 20.5
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 54.5522847498,
+            "y": 16
+          },
+          "c2": {
+            "x": 55,
+            "y": 18.0147186259
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 55,
+            "y": 22.9852813741
+          },
+          "c2": {
+            "x": 54.5522847498,
+            "y": 25
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 53.4477152502,
+            "y": 25
+          },
+          "c2": {
+            "x": 53,
+            "y": 22.9852813741
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 53,
+          "y": 18.0147186259
+        },
+        "c2": {
+          "x": 53.4477152502,
+          "y": 16
+        }
+      }
+    },
+    {
+      "id": 10,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 36,
+          "y": 28
+        },
+        {
+          "x": 59,
+          "y": 25
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 42,
+            "y": 35
+          },
+          "c2": {
+            "x": 54,
+            "y": 38
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 43,
+          "y": 28
+        },
+        {
+          "x": 48,
+          "y": 28
+        },
+        {
+          "x": 52,
+          "y": 28
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 42,
+            "y": 30
+          },
+          "c2": {
+            "x": 47,
+            "y": 31
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 50,
+            "y": 31
+          },
+          "c2": {
+            "x": 52,
+            "y": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 46,
+          "y": 12
+        },
+        {
+          "x": 49,
+          "y": 19
+        },
+        {
+          "x": 53,
+          "y": 14
+        },
+        {
+          "x": 60,
+          "y": 18
+        },
+        {
+          "x": 59,
+          "y": 13
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 45,
+          "y": 13
+        },
+        {
+          "x": 41,
+          "y": 18
+        },
+        {
+          "x": 40,
+          "y": 11
+        },
+        {
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 28,
+          "y": 1
+        },
+        {
+          "x": 37,
+          "y": 5
+        },
+        {
+          "x": 30,
+          "y": 15
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 66,
+          "y": 2
+        },
+        {
+          "x": 58,
+          "y": 5
+        },
+        {
+          "x": 63,
+          "y": 17
+        },
+        {
+          "x": 68,
+          "y": 27
+        },
+        {
+          "x": 69,
+          "y": 30
+        },
+        {
+          "x": 64,
+          "y": 29
+        },
+        {
+          "x": 64,
+          "y": 35
+        },
+        {
+          "x": 60,
+          "y": 32
+        },
+        {
+          "x": 58,
+          "y": 36
+        },
+        {
+          "x": 55,
+          "y": 34
+        },
+        {
+          "x": 53,
+          "y": 36
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 40,
+          "y": 36
+        },
+        {
+          "x": 39,
+          "y": 33
+        },
+        {
+          "x": 34,
+          "y": 36
+        },
+        {
+          "x": 34,
+          "y": 33
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 39,
+          "y": 2
+        },
+        {
+          "x": 56,
+          "y": 2
+        },
+        {
+          "x": 66,
+          "y": 2
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 47,
+            "y": 0
+          },
+          "c2": {
+            "x": 51,
+            "y": 0
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 60,
+            "y": 1
+          },
+          "c2": {
+            "x": 63,
+            "y": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 66,
+          "y": 3
+        },
+        {
+          "x": 64,
+          "y": 17
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 68,
+            "y": 8
+          },
+          "c2": {
+            "x": 67,
+            "y": 11
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 27,
+          "y": 1
+        },
+        {
+          "x": 29,
+          "y": 16
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 23.916666666666668,
+            "y": 6.5
+          },
+          "c2": {
+            "x": 24.583333333333332,
+            "y": 11.5
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 30,
+          "y": 3
+        },
+        {
+          "x": 28,
+          "y": 5
+        },
+        {
+          "x": 30,
+          "y": 5
+        },
+        {
+          "x": 28,
+          "y": 11
+        },
+        {
+          "x": 29,
+          "y": 9
+        },
+        {
+          "x": 30,
+          "y": 12
+        },
+        {
+          "x": 31,
+          "y": 10
+        },
+        {
+          "x": 31,
+          "y": 13
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 64,
+          "y": 3
+        },
+        {
+          "x": 66,
+          "y": 5
+        },
+        {
+          "x": 63,
+          "y": 5
+        },
+        {
+          "x": 66,
+          "y": 9
+        },
+        {
+          "x": 63,
+          "y": 8
+        },
+        {
+          "x": 65,
+          "y": 12
+        },
+        {
+          "x": 62,
+          "y": 10
+        },
+        {
+          "x": 61,
+          "y": 14
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 28,
+          "y": 16
+        },
+        {
+          "x": 21,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 27
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 28.5,
+          "y": 27
+        },
+        {
+          "x": 34,
+          "y": 32.5
+        },
+        {
+          "x": 28.5,
+          "y": 38
+        },
+        {
+          "x": 23,
+          "y": 32.5
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 31.5375661239,
+            "y": 27
+          },
+          "c2": {
+            "x": 34,
+            "y": 29.4624338761
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 34,
+            "y": 35.5375661239
+          },
+          "c2": {
+            "x": 31.5375661239,
+            "y": 38
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 25.4624338761,
+            "y": 38
+          },
+          "c2": {
+            "x": 23,
+            "y": 35.5375661239
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 23,
+          "y": 29.4624338761
+        },
+        "c2": {
+          "x": 25.4624338761,
+          "y": 27
+        }
+      }
+    },
+    {
+      "id": 24,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": false,
+      "fillColor": "#2f5b4d",
+      "closed": true,
+      "nodes": [
+        {
+          "x": 64,
+          "y": 35
+        },
+        {
+          "x": 70,
+          "y": 45
+        },
+        {
+          "x": 68,
+          "y": 57
+        },
+        {
+          "x": 63,
+          "y": 47
+        }
+      ],
+      "conns": [
+        {
+          "type": "curve",
+          "c1": {
+            "x": 66,
+            "y": 35
+          },
+          "c2": {
+            "x": 69,
+            "y": 39
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 71,
+            "y": 51
+          },
+          "c2": {
+            "x": 70,
+            "y": 57
+          }
+        },
+        {
+          "type": "curve",
+          "c1": {
+            "x": 67,
+            "y": 57
+          },
+          "c2": {
+            "x": 64,
+            "y": 53
+          }
+        }
+      ],
+      "closingConn": {
+        "type": "curve",
+        "c1": {
+          "x": 62,
+          "y": 41
+        },
+        "c2": {
+          "x": 63,
+          "y": 36
+        }
+      }
+    },
+    {
+      "id": 25,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 42,
+          "y": 36
+        },
+        {
+          "x": 44,
+          "y": 40
+        },
+        {
+          "x": 51,
+          "y": 40
+        },
+        {
+          "x": 50,
+          "y": 35
+        },
+        {
+          "x": 53,
+          "y": 36
+        },
+        {
+          "x": 54,
+          "y": 48
+        },
+        {
+          "x": 56,
+          "y": 50
+        },
+        {
+          "x": 55,
+          "y": 52
+        },
+        {
+          "x": 58,
+          "y": 59
+        },
+        {
+          "x": 38,
+          "y": 59
+        },
+        {
+          "x": 40,
+          "y": 55
+        },
+        {
+          "x": 39,
+          "y": 49
+        },
+        {
+          "x": 40,
+          "y": 45
+        },
+        {
+          "x": 40,
+          "y": 43
+        },
+        {
+          "x": 30,
+          "y": 50
+        },
+        {
+          "x": 24,
+          "y": 43
+        },
+        {
+          "x": 31,
+          "y": 40
+        },
+        {
+          "x": 32,
+          "y": 38
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 41,
+          "y": 35
+        },
+        {
+          "x": 37,
+          "y": 35
+        },
+        {
+          "x": 35,
+          "y": 38
+        },
+        {
+          "x": 32,
+          "y": 40
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 32,
+          "y": 40
+        },
+        {
+          "x": 33,
+          "y": 45
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 36,
+          "y": 43
+        },
+        {
+          "x": 32,
+          "y": 40
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 26,
+          "y": 38
+        },
+        {
+          "x": 23,
+          "y": 42
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 54,
+          "y": 36
+        },
+        {
+          "x": 57,
+          "y": 40
+        },
+        {
+          "x": 58,
+          "y": 43
+        },
+        {
+          "x": 59,
+          "y": 44
+        },
+        {
+          "x": 62,
+          "y": 43
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 56,
+          "y": 50
+        },
+        {
+          "x": 61,
+          "y": 53
+        },
+        {
+          "x": 64,
+          "y": 52
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 68,
+          "y": 40
+        },
+        {
+          "x": 67,
+          "y": 44
+        },
+        {
+          "x": 68,
+          "y": 47
+        },
+        {
+          "x": 70,
+          "y": 49
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 58,
+          "y": 44
+        },
+        {
+          "x": 56,
+          "y": 48
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 38,
+          "y": 2
+        },
+        {
+          "x": 29,
+          "y": 0
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 43,
+          "y": 48
+        },
+        {
+          "x": 43,
+          "y": 53
+        },
+        {
+          "x": 46,
+          "y": 56
+        },
+        {
+          "x": 49,
+          "y": 57
+        },
+        {
+          "x": 51,
+          "y": 56
+        },
+        {
+          "x": 53,
+          "y": 52
+        },
+        {
+          "x": 52,
+          "y": 48
+        },
+        {
+          "x": 44,
+          "y": 48
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "thickness": 1,
+      "color": "#6ee7c2",
+      "fillEnabled": true,
+      "fillColor": "#2f5b4d",
+      "closed": false,
+      "closingConn": null,
+      "nodes": [
+        {
+          "x": 44,
+          "y": 37
+        },
+        {
+          "x": 47,
+          "y": 38
+        },
+        {
+          "x": 49,
+          "y": 38
+        }
+      ],
+      "conns": [
+        {
+          "type": "line"
+        },
+        {
+          "type": "line"
+        }
+      ]
+    }
+  ]
+}

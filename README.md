@@ -1,4 +1,7 @@
 #Vibe Coding Slop
 
-Attemt to implement CSP-Nonce for WordPress
-- functions.php 
+Little graphic editor
+![graphics.html](graphics.html.png)
+
+##language support
+DE/EN
